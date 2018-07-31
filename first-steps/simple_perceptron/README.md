@@ -9,4 +9,4 @@ To visualize this and to be able to run it on pretty much every machine, I wrote
 <br>
 The project can be displayed by opening the index.html in a browser.
 <br>
-**NOTE:** Since this project used the HTML5-element "canvas" the browser must support HTML5
+**NOTE:** Since this project uses the HTML5-element "canvas" the browser must support HTML5
