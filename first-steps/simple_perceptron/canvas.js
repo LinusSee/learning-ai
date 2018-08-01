@@ -6,17 +6,25 @@ var perceptron = new Perceptron(0.005, 3);
 var bias = 1;
 
 // Draw a straight line
-var line = new StraightLine(1, 0);
-ctx.moveTo(0, canvas.height / 2 - line.evaluate(- canvas.width / 2));
-ctx.lineTo(canvas.width, canvas.height / 2 - line.evaluate(canvas.width / 2));
-ctx.stroke();
+var mainLine = new StraightLine(1, 0);
 
 
 drawCartesianCoordinateSystem(ctx, canvas.width, canvas.height);
 // Draw a hundred points onto the canvas
 var points = new Array(100).fill().map(val => (new Point(canvas.width, canvas.height)));
-drawPoints();
+clearCanvasAndRedraw(canvas, [mainLine, approximatedStraightLine(perceptron.weights)], points);
 
+
+function clearCanvasAndRedraw(canvas, lines, points) {
+	var context = ctx;
+	context.clearRect(0, 0, canvas.width, canvas.height);
+
+	for(line of lines) {
+		drawStraightLine(context, canvas.width, canvas.height, line);
+	}
+	drawCartesianCoordinateSystem(context, canvas.width, canvas.height);
+	drawPoints(context, canvas.width, canvas.height, points);
+}
 
 function drawCartesianCoordinateSystem(context, width, height) {
 	// y-axis
@@ -35,21 +43,32 @@ function drawCartesianCoordinateSystem(context, width, height) {
 	context.stroke();
 }
 
+
+function drawStraightLine(context, height, width, line) {
+	context.moveTo(0, height / 2 - line.evaluate(- width / 2));
+	context.lineTo(width, height / 2 - line.evaluate(width / 2));
+	context.stroke();
+}
+
 // Draws all points on the canvas
 // Color is red for incorrect points and green for valid points
-function drawPoints() {
+function drawPoints(context, width, height, points) {
 	for(point of points) {
-		var canvasPoint = mapPointToCanvas(point, canvas.width, canvas.height);
-		ctx.beginPath();
-		ctx.arc(canvasPoint.x, canvasPoint.y, 3, 0, 2 * Math.PI);
-		if(perceptron.evaluate([point.x, point.y, bias]) === lineActivationFunction(line.pointIsAbove(point.x, point.y))) {
-			ctx.fillStyle = "#00FF00";
+		var canvasPoint = mapPointToCanvas(point, width, height);
+		context.beginPath();
+		context.arc(canvasPoint.x, canvasPoint.y, 3, 0, 2 * Math.PI);
+		if(perceptron.evaluate([point.x, point.y, bias]) === lineActivationFunction(mainLine.pointIsAbove(point.x, point.y))) {
+			context.fillStyle = "#00FF00";
 		} else {
-			ctx.fillStyle = "#FF0000";
+			context.fillStyle = "#FF0000";
 		}
-		ctx.fill();
-		ctx.stroke();
+		context.fill();
+		context.stroke();
 	}
+}
+
+function approximatedStraightLine(weights) {
+	return new StraightLine(-weights[0] / weights[1], -weights[2] / weights[1]);
 }
 
 function mapPointToCanvas(point, canvasWidth, canvasHeight) {
@@ -68,9 +87,11 @@ function lineActivationFunction(pointIsAbove) {
 }
 
 function trainCanvas() {
+	console.log("Weights before:", perceptron.weights);
 	for(point of points) {
-		perceptron.train([point.x, point.y, bias], lineActivationFunction(line.pointIsAbove(point.x, point.y)));
+		perceptron.train([point.x, point.y, bias], lineActivationFunction(mainLine.pointIsAbove(point.x, point.y)));
 	}
-	drawPoints();
+	console.log("Weights after:", perceptron.weights);
+	clearCanvasAndRedraw(canvas, [mainLine, approximatedStraightLine(perceptron.weights)], points);
 }
 
