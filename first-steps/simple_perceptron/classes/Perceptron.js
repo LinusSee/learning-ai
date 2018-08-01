@@ -1,12 +1,12 @@
 class Perceptron {
-	constructor(learningRate) {
-		this.weights = new Array(2).fill().map(e => (Math.random()*2) - 1);
+	constructor(learningRate, weightCount) {
+		this.weights = new Array(weightCount).fill().map(e => (Math.random()*2) - 1);
 		this.learningRate = learningRate;
 	}
 
 	evaluate(input) {
 		var sum = 0;
-		for(var i = 0; i < this.weights.length; i++) {
+		for(var i = 0; i < this.weights.length - 1; i++) {
 			sum += this.weights[i] * input[i];
 		}
 		return this.activationFunction(sum);
