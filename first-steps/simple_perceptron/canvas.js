@@ -86,10 +86,12 @@ function lineActivationFunction(pointIsAbove) {
 	}
 }
 
-function trainCanvas() {
+function trainCanvas(runCount) {
 	console.log("Weights before:", perceptron.weights);
-	for(point of points) {
-		perceptron.train([point.x, point.y, bias], lineActivationFunction(mainLine.pointIsAbove(point.x, point.y)));
+	for(let i = 0; i < runCount; i++) {
+		for(point of points) {
+			perceptron.train([point.x, point.y, bias], lineActivationFunction(mainLine.pointIsAbove(point.x, point.y)));
+		}
 	}
 	console.log("Weights after:", perceptron.weights);
 	clearCanvasAndRedraw(canvas, [mainLine, approximatedStraightLine(perceptron.weights)], points);
