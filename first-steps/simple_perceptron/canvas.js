@@ -6,10 +6,9 @@ var perceptron = new Perceptron(0.005, 3);
 var bias = 1;
 
 // Draw a straight line
-var mainLine = new StraightLine(1, 0);
+var mainLine = new StraightLine(1, 50);
 
 
-drawCartesianCoordinateSystem(ctx, canvas.width, canvas.height);
 // Draw a hundred points onto the canvas
 var points = new Array(100).fill().map(val => (new Point(canvas.width, canvas.height)));
 clearCanvasAndRedraw(canvas, [mainLine, approximatedStraightLine(perceptron.weights)], points);
