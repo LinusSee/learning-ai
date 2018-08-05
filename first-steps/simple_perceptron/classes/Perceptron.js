@@ -6,7 +6,7 @@ class Perceptron {
 
 	evaluate(input) {
 		var sum = 0;
-		for(var i = 0; i < this.weights.length - 1; i++) {
+		for(var i = 0; i < this.weights.length; i++) {
 			sum += this.weights[i] * input[i];
 		}
 		return this.activationFunction(sum);
