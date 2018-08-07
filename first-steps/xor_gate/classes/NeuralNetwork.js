@@ -12,6 +12,9 @@ class NeuralNetwork {
 		return this.activation(finalOutput);
 	}
 
+	train(inputVector, expectedOutput) {
+		const output = feedForward(inputVector);
+	}
 
 	activation(inputVector) {
 		return Array.from(inputVector).map(value => this.sigmoid(value));
@@ -19,6 +22,15 @@ class NeuralNetwork {
 
 	sigmoid(value) {
 		return (1 / (1 + Math.pow(Math.E, - value)));
+	}
+
+	meanSquaredError(actualOutput, expectedOutput) {
+		let result = 0;
+		for(let i = 0; i < actualOutput.length; i++) {
+			const error = actualOutput[i] - expectedOutput[i];
+			result += Math.pow(error, 2);
+		}
+		return result;
 	}
 
 	static multiplyMatrixWithVector(matrix, vector) {
