@@ -10,3 +10,5 @@ To visualize this and to be able to run it on pretty much every machine, I wrote
 The project can be displayed by opening the index.html in a browser.
 <br>
 **NOTE:** Since this project uses the HTML5-element "canvas" the browser must support HTML5
+<br><br>
+The idea for this project is from the following tutorial series https://www.youtube.com/watch?v=DGxIcDjPzac
