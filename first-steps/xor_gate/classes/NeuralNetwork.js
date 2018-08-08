@@ -24,6 +24,11 @@ class NeuralNetwork {
 		return (1 / (1 + Math.pow(Math.E, - value)));
 	}
 
+	sigmoidDerivative(value) {
+		const sigmoidVal = this.sigmoid(value);
+		return (sigmoidVal * (1 - sigmoidVal))
+	}
+
 	meanSquaredError(actualOutput, expectedOutput) {
 		let result = 0;
 		for(let i = 0; i < actualOutput.length; i++) {
@@ -40,6 +45,9 @@ class NeuralNetwork {
 				result[i] = result[i] + matrix[i][j] * vector[j];
 			}
 		}
+		// console.table(matrix);
+		// console.table(vector);
+		// console.table(result);
 		return result;
 	}
 }
