@@ -24,22 +24,22 @@ class NeuralNetwork {
 		// From here on out its only made for a 2-2-1 network (Only temporary)
 		const errorGradient = finalOutput[0] - expectedOutput[0];
 		const outputGradient = finalNetInput.map(val => this.sigmoidDerivative(val))[0];
-		console.log("ErrGrad:", errorGradient);
-		console.log("OutGrad:", outputGradient);
+		//console.log("ErrGrad:", errorGradient);
+		//console.log("OutGrad:", outputGradient);
 
 		const weight5Gradient = errorGradient * outputGradient * hiddenOutput[0];
 		const weight6Gradient = errorGradient * outputGradient * hiddenOutput[1];
-		console.log("W5Grad:", weight5Gradient);
-		console.log("W6Grad:", weight6Gradient);
+		//console.log("W5Grad:", weight5Gradient);
+		//console.log("W6Grad:", weight6Gradient);
 
 		const weight1Gradient = errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputVector[0];
 		const weight2Gradient = errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputVector[1];
 		const weight3Gradient = errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputVector[0];
 		const weight4Gradient = errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputVector[1];
-		console.log("W1Grad", weight1Gradient);
-		console.log("W2Grad", weight2Gradient);
-		console.log("W3Grad", weight3Gradient);
-		console.log("W4Grad", weight4Gradient);
+		//console.log("W1Grad", weight1Gradient);
+		//console.log("W2Grad", weight2Gradient);
+		//console.log("W3Grad", weight3Gradient);
+		//console.log("W4Grad", weight4Gradient);
 
 		this.hiddenWeights[0][0] -= this.learningRate * weight1Gradient;
 		this.hiddenWeights[0][1] -=	this.learningRate * weight2Gradient;
