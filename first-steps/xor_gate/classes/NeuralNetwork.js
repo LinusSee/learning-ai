@@ -50,6 +50,41 @@ class NeuralNetwork {
 		this.outputWeights[0][1] -= this.learningRate * weight6Gradient;
 	}
 
+	trainBatch(inputs, expectedOutputs) {
+		let weight1Gradient = 0;
+		let weight2Gradient = 0;
+		let weight3Gradient = 0;
+		let weight4Gradient = 0;
+		let weight5Gradient = 0;
+		let weight6Gradient = 0;
+
+		for(let i = 0; i < inputs.length; i++) {
+			const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, inputs[i]).map(val => val + this.hiddenBias);
+			const hiddenOutput = this.activation(hiddenNetInput);
+			const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, hiddenOutput).map(val => val + this.outputBias)
+			const finalOutput = this.activation(finalNetInput);
+
+			// From here on out its only made for a 2-2-1 network (Only temporary)
+			const errorGradient = finalOutput[0] - expectedOutputs[i][0];
+			const outputGradient = finalNetInput.map(val => this.sigmoidDerivative(val))[0];
+
+			weight5Gradient += errorGradient * outputGradient * hiddenOutput[0];
+			weight6Gradient += errorGradient * outputGradient * hiddenOutput[1];
+
+			weight1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][0];
+			weight2Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][1];
+			weight3Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][0];
+			weight4Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][1];
+		}
+		this.hiddenWeights[0][0] -= this.learningRate * weight1Gradient;
+		this.hiddenWeights[0][1] -=	this.learningRate * weight2Gradient;
+		this.hiddenWeights[1][0] -= this.learningRate * weight3Gradient;
+		this.hiddenWeights[1][1] -= this.learningRate * weight4Gradient;
+
+		this.outputWeights[0][0] -= this.learningRate * weight5Gradient;
+		this.outputWeights[0][1] -= this.learningRate * weight6Gradient;
+	}
+
 	activation(inputVector) {
 		return Array.from(inputVector).map(value => this.sigmoid(value));
 	}
