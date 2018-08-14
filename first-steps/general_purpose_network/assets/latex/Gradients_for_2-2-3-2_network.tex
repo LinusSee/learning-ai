@@ -71,7 +71,7 @@
 		\foreach \dest in {1, 2, 3}
 			\path (H1-\source) edge (H2-\dest);
 
-	% Connect every node in the hidden layer with the output layer
+	% Connect every node in hidden layer 2 with the output layer
 	\foreach \source in {1, 2, 3}
 		\foreach \dest in {1, 2}
 			\path (H2-\source) edge (O-\dest);
