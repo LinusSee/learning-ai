@@ -8,4 +8,20 @@ class NeuralNetwork {
 		}
 		console.table(this.weights);
 	}
+
+	feedForward(inputVector) {
+		let currentOutput = inputVector;
+		for(let i = 0; i < this.weights.length; i++) {
+			currentOutput = this.activation(math.multiply(this.weights[i], currentOutput));
+		}
+		return currentOutput;
+	}
+
+	activation(vector) {
+		return math.map(vector, (val) => ( this.sigmoid(val) ));
+	}
+
+	sigmoid(value) {
+		return 1 / (1 + Math.pow(Math.E, - value));
+	}
 }
