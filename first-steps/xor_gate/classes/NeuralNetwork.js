@@ -1,24 +1,30 @@
 class NeuralNetwork {
 	constructor(inputCount, hiddenCount, outputCount, learningRate) {
-		this.hiddenWeights = new Array(hiddenCount).fill().map(e => new Array(inputCount).fill().map(v => Math.random() * 2 - 1));
-		this.outputWeights = new Array(outputCount).fill().map(e => new Array(hiddenCount).fill().map(v => Math.random() * 2 - 1));
-		this.hiddenBias = Math.random() * 2 - 1;
-		this.outputBias = Math.random() * 2 - 1;
+		this.hiddenWeights = new Array(hiddenCount).fill().map(e => new Array(inputCount + 1).fill().map(v => Math.random() * 2 - 1));
+		this.outputWeights = new Array(outputCount).fill().map(e => new Array(hiddenCount + 1).fill().map(v => Math.random() * 2 - 1));
+		//this.hiddenBias = Math.random() * 2 - 1;
+		//this.outputBias = Math.random() * 2 - 1;
 		this.learningRate = learningRate;
 	}
 
 	feedForward(inputVector) {
-		const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, inputVector).map(val => val + this.hiddenBias);
+		const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, this.biasedVector(inputVector));
 		const hiddenOutput = this.activation(hiddenNetInput);
-		const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, hiddenOutput).map(val => val + this.outputBias);
+		const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, this.biasedVector(hiddenOutput));
 
 		return this.activation(finalNetInput);
 	}
 
+	biasedVector(inputVector) {
+		const newVector = Array.from(inputVector);
+		newVector.push(1.0);
+		return newVector;
+	}
+
 	train(inputVector, expectedOutput) {
-		const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, inputVector).map(val => val + this.hiddenBias);
+		const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, this.biasedVector(inputVector));
 		const hiddenOutput = this.activation(hiddenNetInput);
-		const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, hiddenOutput).map(val => val + this.outputBias);
+		const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, this.biasedVector(hiddenOutput));
 		const finalOutput = this.activation(finalNetInput);
 
 		// From here on out its only made for a 2-2-1 network (Only temporary)
@@ -57,11 +63,14 @@ class NeuralNetwork {
 		let weight4Gradient = 0;
 		let weight5Gradient = 0;
 		let weight6Gradient = 0;
+		let bias1Gradient = 0;
+		let bias2Gradient = 0;
+		let bias3Gradient = 0;
 
 		for(let i = 0; i < inputs.length; i++) {
-			const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, inputs[i]).map(val => val + this.hiddenBias);
+			const hiddenNetInput = NeuralNetwork.multiplyMatrixWithVector(this.hiddenWeights, this.biasedVector(inputs[i]));
 			const hiddenOutput = this.activation(hiddenNetInput);
-			const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, hiddenOutput).map(val => val + this.outputBias)
+			const finalNetInput = NeuralNetwork.multiplyMatrixWithVector(this.outputWeights, this.biasedVector(hiddenOutput));
 			const finalOutput = this.activation(finalNetInput);
 
 			// From here on out its only made for a 2-2-1 network (Only temporary)
@@ -71,10 +80,15 @@ class NeuralNetwork {
 			weight5Gradient += errorGradient * outputGradient * hiddenOutput[0];
 			weight6Gradient += errorGradient * outputGradient * hiddenOutput[1];
 
+			// Severe mistake: Since .map modifies the list the sigmoid derivative modifies the map 4 times
 			weight1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][0];
 			weight2Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][1];
 			weight3Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][0];
 			weight4Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][1];
+
+			bias1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0];
+			bias2Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1];
+			bias3Gradient += errorGradient * outputGradient;
 		}
 		this.hiddenWeights[0][0] -= this.learningRate * weight1Gradient;
 		this.hiddenWeights[0][1] -=	this.learningRate * weight2Gradient;
@@ -83,6 +97,10 @@ class NeuralNetwork {
 
 		this.outputWeights[0][0] -= this.learningRate * weight5Gradient;
 		this.outputWeights[0][1] -= this.learningRate * weight6Gradient;
+
+		this.hiddenWeights[0][2] -= this.learningRate * bias1Gradient;
+		this.hiddenWeights[1][2] -= this.learningRate * bias2Gradient;
+		this.outputWeights[0][2] -= this.learningRate * bias3Gradient;
 	}
 
 	activation(inputVector) {
