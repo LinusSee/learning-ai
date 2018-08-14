@@ -49,14 +49,14 @@ class NeuralNetwork {
 			weight5Gradient += errorGradient * outputGradient * hiddenOutput[0];
 			weight6Gradient += errorGradient * outputGradient * hiddenOutput[1];
 
-			// Severe mistake: Since .map modifies the list the sigmoid derivative modifies the map 4 times
-			weight1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][0];
-			weight2Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0] * inputs[i][1];
-			weight3Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][0];
-			weight4Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1] * inputs[i][1];
+			const derivedHiddenNetInput = Array.from(hiddenNetInput).map(val => this.sigmoidDerivative(val));
+			weight1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * derivedHiddenNetInput[0] * inputs[i][0];
+			weight2Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * derivedHiddenNetInput[0] * inputs[i][1];
+			weight3Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * derivedHiddenNetInput[1] * inputs[i][0];
+			weight4Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * derivedHiddenNetInput[1] * inputs[i][1];
 
-			bias1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[0];
-			bias2Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * hiddenNetInput.map(val => this.sigmoidDerivative(val))[1];
+			bias1Gradient += errorGradient * outputGradient * this.outputWeights[0][0] * derivedHiddenNetInput[0];
+			bias2Gradient += errorGradient * outputGradient * this.outputWeights[0][1] * derivedHiddenNetInput[1];
 			bias3Gradient += errorGradient * outputGradient;
 		}
 		this.hiddenWeights[0][0] -= this.learningRate * weight1Gradient;
