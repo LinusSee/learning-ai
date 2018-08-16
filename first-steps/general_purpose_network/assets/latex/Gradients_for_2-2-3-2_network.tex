@@ -31,7 +31,6 @@
 		\shade[ball color=\color] (\x, 0) circle (3mm);
     \end{tikzpicture}
 \end{comment}
-
     % http://www.texample.net/tikz/examples/neural-network/
     \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
 	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
@@ -44,38 +43,42 @@
 	% Draw the input layer nodes
 	\foreach \name / \y in {1, 2}
 		\path[yshift=-0.5cm]
-		node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {};
+		node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {$a_\y$};
 
 	% Draw the hidden layer 1 nodes
 	\foreach \name / \y in {1, ..., 4}
 		\path[yshift=0.5cm]
-		node[hidden neuron] (H1-\name) at (\layersep,-\y cm) {};
+		node[hidden neuron] (H1-\name) at (\layersep,-\y cm) {$b_\y$};
 
 	% Draw the hidden layer 2 nodes
 	\foreach \name / \y in {1, 2, 3}
-		\node[hidden neuron] (H2-\name) at (2*\layersep,-\y cm) {};
+		\node[hidden neuron] (H2-\name) at (2*\layersep,-\y cm) {$c_\y$};
 
-	% Draw the output layer node
+	% Draw the output layer nodes
 	\foreach \name/\y in {1, 2}
 		%\node[output neuron,pin={[pin edge={->}]right:Output}, right of=H2-2] (O) {};
 		\path[yshift=-0.5cm]
-		node[output neuron, pin=right:Output \#\y] (O-\name) at (3*\layersep, -\y) {};
+		node[output neuron, pin=right:Output \#\y] (O-\name) at (3*\layersep, -\y) {$d_\y$};
 
 	% Connect every node in the input layer with every node in the
 	% hidden layer.
 	\foreach \source in {1, 2}
 		\foreach \dest in {1, ..., 4}
-			\path (I-\source) edge (H1-\dest);
+			\path (I-\source) edge node(w1-\source-\dest){}(H1-\dest);
 
 	\foreach \source in {1, ..., 4}
 		\foreach \dest in {1, 2, 3}
-			\path (H1-\source) edge (H2-\dest);
+			\path (H1-\source) edge node(w2-\source-\dest){} (H2-\dest);
 
 	% Connect every node in hidden layer 2 with the output layer
 	\foreach \source in {1, 2, 3}
 		\foreach \dest in {1, 2}
-			\path (H2-\source) edge (O-\dest);
+			\path (H2-\source) edge node(w3-\source-\dest){}(O-\dest);
 
+
+	\node[annot, above of=w1-1-1, node distance=2.5mm]{$w_{11}$};
+	\node[annot, above of=w2-1-1, node distance=1.8mm]{$w_{21}$};
+	\node[annot, above of=w3-1-1, node distance=1.8mm]{$w_{31}$};
 	% Annotate the layers
 	\node[annot,above of=H1-1, node distance=1cm] (hl1) {Hidden layer 1};
 	\node[annot,left of=hl1] {Input layer};
