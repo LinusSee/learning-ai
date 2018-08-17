@@ -37,11 +37,50 @@ they become irrelevant when deriving with respect to $w_{31}$.\\
 \noindent\\
 Putting it back together we get
     \begin{equation}
-    	E_{d_1} = \frac{1}{2}(target_{d_1} - sig(net_{d_1} = w_{31}*out_{c_1} + w_{xx}*out_{c_2} + w_{xx}*out_{c_3}))^2
+    	E_{d_1} = \frac{1}{2}(target_{d_1} - sig(w_{31}*out_{c_1} + w_{xx}*out_{c_2} + w_{xx}*out_{c_3}))^2
     \end{equation}
-    
-    
-    
-    
+When beginning to derive this formula, we already need the chain rule. We derive the outer function and multiply it by the derivative of the inner function resulting in
+    \begin{equation}%WICHTIG: Explain splitting the Error in two derivatives
+    	(inner)*\frac{\partial inner}{\partial w_{31}} \textrm{, mit } inner = target_{d_1} - sig(w_{31}*out_{c_1} + w_{xx}*out_{c_2} + w_{xx}*out_{c_3})
+    \end{equation}
+Now to get the first factor you could also derive the equation
+   \begin{center}
+$E_{d_1} = \frac{1}{2}(target_{d_1} - out_{d_1})^2$
+   \end{center}
+with respect to $out_{d_1}$, which would be
+    \begin{center}
+	$\frac{\partial E_{d_1}}{\partial out_{d_1}} = \frac{\partial \frac{1}{2}(target_{d_1}-out_{d_1})^2}{\partial out_{d_1}} = (target_{d_1}-out_{d_1})*(-1)$
+    \end{center}
+The only difference is that $out_{d_1}$ isn't split up into its components and the $-1$ at the end. The $-1$ is a leftover from deriving the inner function, which looks like it
+doesn't exist in equation (3), but it is only hidden in $\frac{\partial inner}{\partial w_{31}}$.\\
+Now as you can see, $\frac{\partial E_{d_1}}{\partial out_{d_1}}$ is the first factor in equation one, so we already got that part figured out. To get the second and third factor we now
+have to continue deriving with $\frac{\partial inner}{\partial w_{31}}$ (see equation 3). Since $w_{31}$ is still nested in a function, in this case sig(x), we need to apply the chain
+rule a second time, which results in
+    \begin{equation}
+    	\frac{\partial inner }{\partial w_{31}} = -sig(net_{d_1})*(1 - sig(net_{d_1}))*\frac{\partial net_{d_1}}{\partial w_{31}},
+    \end{equation}
+    \begin{center}
+    	mit $net_{d_1}=w_{31}*out_{c_1} + w_{xx}*out_{c_2} + w_{xx}*out_{c_3}$
+    \end{center}
+Let's look at the first factor first, which ist pretty much only the derivative or the sigmoid function. Now since the output $out_{d_1}$ is nothing but $sig(net_{d_1})$, the derivative of
+$out_{d_1}$ is also the derivative of $sig(net_{d_1})$. Therefore we get
+    \begin{equation}
+	\frac{\partial out_{d_1}}{\partial w_{31}} = \frac{\partial sig(net_{d_1})}{\partial w_{31}}
+    \end{equation}
+As seen in equation (4), when we apply the chainrule to $sig(net_{d_1})$ we first derive with respect to $net_{d_1}$ and then multiply by the derivative with respect to $w_{31}$.
+This means we now have the equation
+    \begin{equation}
+	\frac{\partial sig(net_{d_1})}{\partial w_{31}} = \frac{\partial sig(net_{d_1})}{\partial net_{d_1}}*\frac{\partial net_{d_1}}{\partial w_{31}}
+    \end{equation}
+From the equality in equation (5) we can deduct that
+    \begin{equation}
+    	\frac{\partial sig(net_{d_1)}}{\partial w_{31}} = \frac{\partial sig(net_{d_1})}{\partial net_{d_1}}*\frac{\partial net_{d_1}}{\partial w_{31}} = \frac{\partial out_{d_1}}{\partial 			net_{d_1}}*\frac{\partial net_{d_1}}{\partial w_{31}} = \frac{\partial out_{d_1}}{\partial w_{31}}
+    \end{equation}
+All those steps put back together we have now proven, that by following the chain rule $\frac{\partial E_{d_1}}{\partial w_{31}} = \frac{\partial E_{total}}{\partial out_{d1}} * \frac{\partial out_{d1}}{\partial net_{d1}} * \frac{\partial net_{d1}}{\partial w_{31}}$ (see equation 1).\\
+While we wanted it for $E_{total}$ and not just $E_{d_1}$ you can see, when looking at $E_{d_1}$, that it does not contain $w_{31}$ at all, meaning that deriving with respect to $w_{31}$ must result in 0. \\
+In other words, for weight $w_{31}$ applies that
+    \begin{equation}
+    	\frac{\partial E_{d_1}}{\partial w_{31}} = \frac{\partial E_{total}}{\partial w_{31}} = \frac{\partial E_{total}}{\partial out_{d1}} * \frac{\partial out_{d1}}{\partial net_{d1}} * 			\frac{\partial net_{d1}}{\partial w_{31}}
+    \end{equation}
 
 \end{document}
