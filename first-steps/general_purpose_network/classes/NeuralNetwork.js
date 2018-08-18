@@ -4,17 +4,22 @@ class NeuralNetwork {
 	constructor(neuronsPerLayer) {
 		this.weights = new Array(neuronsPerLayer.length - 1).fill();
 		for(let i = 0; i < this.weights.length; i++) {
-			this.weights[i] = math.matrix(new Array(neuronsPerLayer[i + 1]).fill().map(val => new Array(neuronsPerLayer[i] + 1).fill().map(val => Math.random() * 2 - 1)));
+			this.weights[i] = new Array(neuronsPerLayer[i + 1]).fill().map(val => new Array(neuronsPerLayer[i] + 1).fill().map(val => Math.random() * 2 - 1));
 		}
 		console.table(this.weights);
 	}
 
 	feedForward(inputVector) {
-		let currentOutput = this.biasedVector(math.matrix(inputVector));
+		let currentOutput = this.biasedVector(inputVector);
 		for(let i = 0; i < this.weights.length; i++) {
 			currentOutput = this.biasedVector(this.activation(math.multiply(this.weights[i], currentOutput)));
 		}
 		return currentOutput;
+	}
+
+	train(input, expectedOutput) {
+		// Currently hardcode for 3Layer network (IHO)
+		
 	}
 
 	activation(vector) {
@@ -26,7 +31,10 @@ class NeuralNetwork {
 	}
 
 	biasedVector(vector) {
-		const newSize = vector._size[0] + 1;
-		return vector.resize([newSize], 1.0);
+		//const newSize = vector._size[0] + 1;
+		//return vector.resize([newSize], 1.0);
+		const newVector = Array.from(vector);
+		newVector.push(1.0);
+		return newVector;
 	}
 }
