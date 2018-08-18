@@ -2,11 +2,14 @@
 
 \usepackage{tikz}
 \usepackage{hyperref}
-%\usepackage{amsmath}
+\usepackage{amsmath}
 % \usepackage{mathtools}
 
 
 \begin{document}
+\noindent This document is to collect my thoughts about gradient descent and backpropagation as well as figuring out how to get a generic backpropagation algorithm, without
+it being fixed on a certain network, on my own.
+
 \noindent This example assumes that the layers are numbered from 1 to n, with the first layer being the first hidden layer and the nth layer being the output layer.
 It also assumes the costfunction $\sum \frac{1}{2}(target - out)^2$ and that the sigmoid function (sig(x)=$\frac{1}{1 + e^{-x}}$) is used as an activation function and
 uses the given example of a 2-4-3-2 network.\\
@@ -82,5 +85,62 @@ In other words, for weight $w_{31}$ applies that
     \begin{equation}
     	\frac{\partial E_{d_1}}{\partial w_{31}} = \frac{\partial E_{total}}{\partial w_{31}} = \frac{\partial E_{total}}{\partial out_{d1}} * \frac{\partial out_{d1}}{\partial net_{d1}} * 			\frac{\partial net_{d1}}{\partial w_{31}}
     \end{equation}
+    
+    
+    
 
+\newpage % Formula for deriving with respect to layer n
+\noindent Formula for deriving the gradient with respect to a weight $w_{3x}$ by taking the example of $w_{31}$
+    \begin{gather}
+	\frac{\partial E_{total}}{w_{31}} = \frac{\partial E_{d_1} + E_{d_2}}{\partial w_{31}} = \frac{\partial E_{d_1}}{\partial w_{31}} + \frac{\partial E_{d_2}}{\partial w_{31}}\\[1em]
+	\frac{\partial E_{d_1}}{\partial w_{31}} + \frac{\partial E_{d_2}}{\partial w_{31}} = \frac{\partial E_{d_1}}{\partial w_{31}} + 0 = \frac{\partial E_{d_1}}{\partial w_{31}}\\[1em]
+	\frac{\partial E_{d_1}}{\partial w_{31}} = \frac{\partial E_{d_1}}{\partial out_{d_1}} * \frac{\partial out_{d_1}}{\partial w_{31}} = \frac{\partial E_{d_1}}{\partial out_{d_1}} * 			\frac{\partial out_{d_1}}{\partial net_{d_1}} * \frac{\partial net_{d_1}}{\partial w_{31}}
+    \end{gather}
+Plugging in the actual values for each factor in equation (11) we get
+    \begin{gather}
+    	\frac{\partial E_{d_1}}{\partial out_{d_1}} = (out_{d_1} - target_{d_1})\\[1em]
+    	\frac{\partial out_{d_1}}{\partial net_{d_1}} = sig'(net_{d_1}) = out_{d_1} * (1 - out_{d_1})\\[1em]
+    	\frac{\partial net_{d_1}}{\partial w_{31}} = \frac{\partial w_{31} * out_{c_1} + w_{3x} * out_{c_2} + w_{3x} * out_{c_3}}{\partial w_{31}} = out_{c_1}
+    \end{gather}
+Resulting in the final equation
+    \begin{equation}
+    	\frac{\partial E_{total}}{\partial w_{31}} = \frac{\partial E_{d_1}}{\partial w_{31}} = (out_{d_1} - target_{d_1}) * out_{d_1} * (1 - out_{d_1}) * out_{c_1}
+    \end{equation}
+    
+    
+    
+\newpage % Formula for deriving with respect to layer n-1
+\noindent Formula for deriving the gradient with respect to a weight $w_{2x}$ by taking the example of $w_{21}$
+    \begin{equation}
+    	\frac{\partial E_{total}}{\partial w_{2_1}} = \frac{\partial E_{d_1}}{\partial w_{21}} + \frac{\partial E_{d_2}}{w_{21}}
+    \end{equation}
+Starting with the first summand
+    \begin{gather}
+    	\frac{\partial E_{d_1}}{\partial w_{21}} = \frac{\partial E_{d_1}}{\partial out_{d_1}} * \frac{\partial out_{d_1}}{\partial net_{d_1}} * \frac{\partial net_{d_1}}{w_{21}}\\[1em]
+    	\frac{\partial net_{d_1}}{w_{21}} = \frac{\partial w_{31}*out_{c_1} + w_{3x}*out_{c_2} + w_3x*out_{c_1}}{\partial w_{21}}\\
+    	\frac{\partial net_{d_1}}{w_{21}} = \frac{\partial w_{31}*out_{c_1}}{\partial w_{21}} + \frac{w_{3x}*out_{c_2}}{\partial w_{21}} + \frac{w_3x*out_{c_3}}{\partial w_{21}}\\
+    	\frac{\partial net_{d_1}}{w_{21}} = \frac{\partial w_{31}*out_{c_1}}{\partial w_{21}} + 0 + 0 = \frac{\partial w_{31}*out_{c_1}}{\partial w_{21}}\\[1em]
+    	\frac{\partial net_{d_1}}{w_{21}} = \frac{\partial net_{d_1}}{\partial out_{c_1}} * \frac{\partial out_{c_1}}{\partial net_{c_1}} * \frac{\partial net_{c_1}}{\partial w_{21}}
+    \end{gather}
+Putting it together for $E_{d_1}$ we get
+    \begin{equation}
+    	\frac{\partial E_{d_1}}{\partial w_{21}} = \frac{\partial E_{d_1}}{\partial out_{d_1}} * \frac{\partial out_{d_1}}{\partial net_{d_1}} * \frac{\partial net_{d_1}}{\partial 				out_{c_1}} * \frac{\partial out_{c_1}}{\partial net_{c_1}} * \frac{\partial net_{c_1}}{\partial w_{21}}
+    \end{equation}
+Plugging in the values this equals
+    \begin{equation}
+    	\frac{\partial E_{d_1}}{\partial w_{21}} = (out_{d_1} - target_{d_1}) * out_{d_1} * (1 - out_{d_1}) * w_{31} * out_{c_1} * (1 - out_{c_1}) * out_{b_1}
+    \end{equation}
+    
+    
+\noindent With that we have the first part of our total gradient, now we need the second part $\frac{\partial E_{d_2}}{\partial w_{21}}$.\\
+In step (20) we see that two of the factors result in 0 when derived as they are not influenced by $w_{21}$. When calculating the second part of the gradient this pattern will repeat itself, but we will one weight will matter for us. It is the connection between $c_1$ and $d_1$, lets call it $w_{34}$.
+The rest of the process is exactely the same and will result in a similar expression to (22)
+    \begin{equation}
+    	\frac{\partial E_{d_2}}{\partial w_{21}} = \frac{\partial E_{d_2}}{\partial out_{d_2}} * \frac{\partial out_{d_2}}{\partial net_{d_2}} * \frac{\partial net_{d_2}}{\partial 				out_{c_1}} * \frac{\partial out_{c_1}}{\partial net_{c_1}} * \frac{\partial net_{c_1}}{\partial w_{21}}
+    \end{equation}
+Now just like above (23) let's plug in the the values
+    \begin{equation}
+    	\frac{\partial E_{d_2}}{\partial w_{21}} = (out_{d_2} - target_{d_2}) * out_{d_2} * (1 - out_{d_2}) * w_{34} * out_{c_1} * (1 - out_{c_1}) * out_{b_1}
+    \end{equation}
+Put these two together and you have the gradient with respect to $w_{21}$.
 \end{document}
