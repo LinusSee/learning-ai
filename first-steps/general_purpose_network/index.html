@@ -7,6 +7,73 @@
 		<script src="classes/NeuralNetwork.js"></script>
 	</head>
 	<body>
-		Page
+		<div>
+ 			Expected outputs:
+ 			<br>
+ 			<table>
+ 				<tr>
+ 					<th>A</th>
+ 					<th>B</th>
+ 					<th>X</th>
+ 				</tr>
+ 				<tr>		
+					<td>1</td>
+ 					<td>1</td>
+ 					<td>0</td>
+ 				</tr>
+ 				<tr>
+ 					<td>1</td>
+ 					<td>0</td>
+ 					<td>1</td>
+ 				</tr> 				
+				<tr> 					
+					<td>0</td>
+ 					<td>1</td>
+ 					<td>1</td>
+ 				</tr>
+ 				<tr>
+ 					<td>0</td>
+ 					<td>0</td>
+ 					<td>0</td>
+ 				</tr> 			
+			</table> 		
+		</div>
+ 		<br>
+ 		<div>
+ 			Actual outputs:
+ 			<br>
+ 			<table>
+ 				<tr>
+ 					<th>A</th>
+ 					<th>B</th>
+ 					<th>X</th>
+ 				</tr> 				
+				<tr>
+ 					<td>1</td>
+ 					<td>1</td>
+ 					<td id="outputOne">None</td>
+ 				</tr>
+ 				<tr>
+ 					<td>1</td>
+ 					<td>0</td>					
+					<td id="outputTwo">None</td>
+ 				</tr>
+ 				<tr>
+ 					<td>0</td>
+ 					<td>1</td>
+ 					<td id="outputThree">None</td>
+ 				</tr>
+ 				<tr> 					
+					<td>0</td>
+ 					<td>0</td>
+ 					<td id="outputFour">None</td>
+ 				</tr>
+ 			</table>
+ 		</div>
+ 		<br>
+ 		<input type="submit" value="Train once" onclick="main.train(1)"> 		
+		<input type="submit" value="Train 1000" onclick="main.train(1000)">
+ 		<input type="submit" value="Evaluate" onclick="main.evaluate()">
+ 		<script src="main.js"></script>
 	<body>
 </html>
