@@ -21,33 +21,15 @@ class NeuralNetwork {
 		return currentOutput;
 	}
 
-	train(input, expectedOutput) {
-		// Currently hardcoded for 3Layer network (IHO)
-		const net1 = math.multiply(this.weights[0], this.biasedVector(input));
-		const out1 = this.activation(net1);
-		const net2 = math.multiply(this.weights[1], this.biasedVector(out1));
-		const out2 = this.activation(net2);
-
-		const deriv1 = out1.map(val => val * (1 - val));	// Derivatives for layer 1 (hidden)
-		const deriv2 = out2.map((val, index, arr) => (expectedOutput[index] - arr[index]) * (val * (1 - val)));	// Derivatives for layer 2 (output)
-
-		// Backpropagation starts here
-		const gradientsOutput = math.multiply(math.transpose([out2]), [this.biasedVector(deriv1)]);	// Ugly conversions because of mathjs
-		const continueGrad = math.transpose(math.multiply(math.transpose(this.weights[1]), math.diag(out2)));
-		const gradientsHidden = math.multiply(math.transpose([out1]), [this.biasedVector(input)]);
-
-		const reducedGradientHidden = math.multiply(gradientsHidden, this.learningRate);
-		const reducedGradientOutput = math.multiply(gradientsOutput, this.learningRate);
-		this.weights[0] = math.subtract(this.weights[0], reducedGradientHidden);
-		this.weights[1] = math.subtract(this.weights[1], reducedGradientOutput);
-		console.log("Seperator");
-		console.table(reducedGradientHidden);
-		console.table(reducedGradientOutput);
+	temp(target, actual) {
+		return (actual - target) * actual * (1 - actual);
 	}
 
 	trainBatch(inputs, expectedOutputs) {
 		let hiddenGradient = new Array(this.neuronsPerLayer[1]).fill().map(val => new Array(this.neuronsPerLayer[0] + 1).fill(0));
+		console.log("HiddenGradient", hiddenGradient);
 		let outputGradient = new Array(this.neuronsPerLayer[2]).fill().map(val => new Array(this.neuronsPerLayer[1] + 1).fill(0));
+		console.log("OutputGradient", outputGradient);
 
 		for(let i = 0; i < inputs.length; i++) {
 			const input = inputs[i];
@@ -58,14 +40,21 @@ class NeuralNetwork {
 			const out2 = this.activation(net2);
 
 			const deriv1 = out1.map(val => val * (1 - val));	// Derivatives for layer 1 (hidden)
-			const deriv2 = out2.map((val, index, arr) => (arr[index] - expectedOutput[index]) * (val * (1 - val)));	// Derivatives for layer 2 (output)
-
+			const deriv2 = out2.map((val, index) => (this.temp(expectedOutput[index], val)));	// Derivatives for layer 2 (output)
+			console.log("deriv1", deriv1);
+			console.log("deriv2", deriv2);
 			// Backpropagation starts here
-			const gradientsOutput = math.multiply(math.transpose([out2]), [this.biasedVector(deriv1)]);	// Ugly conversions because of mathjs
-			const continueGrad = math.transpose(math.multiply(math.transpose(this.weights[1]), math.diag(out2)));
-			const gradientsHidden = math.multiply(math.transpose([out1]), [this.biasedVector(input)]);
+			const gradientsOutput = math.multiply(math.transpose([deriv2]), [this.biasedVector(out1)]);	// Ugly conversions because of mathjs // CORRECT
+			console.log("Stuff0", gradientsOutput);
+			const continueGrad1 = math.multiply(math.transpose(this.weightsWithoutBias(this.weights[1])), deriv2);
+			console.log("Stuff1", continueGrad1);
+			const continueGrad2 = math.dotMultiply(continueGrad1, deriv1);
+			console.log("Stuff2", continueGrad2);
+			const gradientsHidden = math.multiply(math.transpose([continueGrad2]), [this.biasedVector(input)]);
+			console.log("Stuff3", gradientsHidden);
 
 			hiddenGradient = math.add(hiddenGradient, gradientsHidden);
+			console.log("Stuff4");
 			outputGradient = math.add(outputGradient, gradientsOutput);
 		}
 		const reducedGradientHidden = math.multiply(hiddenGradient, this.learningRate);
@@ -75,6 +64,18 @@ class NeuralNetwork {
 		console.log("Separator");
 		console.table(reducedGradientHidden);
 		console.table(reducedGradientOutput);
+	}
+
+	weightsWithoutBias(matrix) {
+		const newMatrix = [];
+		for(let x = 0; x < matrix.length; x++) {
+			const row = [];
+			for(let y = 0; y < matrix[x].length - 1; y++) {
+				row.push(matrix[x][y]);
+			}
+			newMatrix.push(row);
+		}
+		return newMatrix;
 	}
 
 	activation(vector) {
