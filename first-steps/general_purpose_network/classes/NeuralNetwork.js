@@ -27,9 +27,9 @@ class NeuralNetwork {
 
 	trainBatch(inputs, expectedOutputs) {
 		let hiddenGradient = new Array(this.neuronsPerLayer[1]).fill().map(val => new Array(this.neuronsPerLayer[0] + 1).fill(0));
-		console.log("HiddenGradient", hiddenGradient);
+		//console.log("HiddenGradient", hiddenGradient);
 		let outputGradient = new Array(this.neuronsPerLayer[2]).fill().map(val => new Array(this.neuronsPerLayer[1] + 1).fill(0));
-		console.log("OutputGradient", outputGradient);
+		//console.log("OutputGradient", outputGradient);
 
 		for(let i = 0; i < inputs.length; i++) {
 			const input = inputs[i];
@@ -41,29 +41,29 @@ class NeuralNetwork {
 
 			const deriv1 = out1.map(val => val * (1 - val));	// Derivatives for layer 1 (hidden)
 			const deriv2 = out2.map((val, index) => (this.temp(expectedOutput[index], val)));	// Derivatives for layer 2 (output)
-			console.log("deriv1", deriv1);
-			console.log("deriv2", deriv2);
+			//console.log("deriv1", deriv1);
+			//console.log("deriv2", deriv2);
 			// Backpropagation starts here
-			const gradientsOutput = math.multiply(math.transpose([deriv2]), [this.biasedVector(out1)]);	// Ugly conversions because of mathjs // CORRECT
-			console.log("Stuff0", gradientsOutput);
+			const gradientsOutput = math.multiply(math.transpose([deriv2]), [this.biasedVector(out1)]);	// Ugly conversions because of mathjs
+			//console.log("Stuff0", gradientsOutput);
 			const continueGrad1 = math.multiply(math.transpose(this.weightsWithoutBias(this.weights[1])), deriv2);
-			console.log("Stuff1", continueGrad1);
+			//console.log("Stuff1", continueGrad1);
 			const continueGrad2 = math.dotMultiply(continueGrad1, deriv1);
-			console.log("Stuff2", continueGrad2);
+			//console.log("Stuff2", continueGrad2);
 			const gradientsHidden = math.multiply(math.transpose([continueGrad2]), [this.biasedVector(input)]);
-			console.log("Stuff3", gradientsHidden);
+			//console.log("Stuff3", gradientsHidden);
 
 			hiddenGradient = math.add(hiddenGradient, gradientsHidden);
-			console.log("Stuff4");
+			//console.log("Stuff4");
 			outputGradient = math.add(outputGradient, gradientsOutput);
 		}
 		const reducedGradientHidden = math.multiply(hiddenGradient, this.learningRate);
 		const reducedGradientOutput = math.multiply(outputGradient, this.learningRate);
 		this.weights[0] = math.subtract(this.weights[0], reducedGradientHidden);
 		this.weights[1] = math.subtract(this.weights[1], reducedGradientOutput);
-		console.log("Separator");
-		console.table(reducedGradientHidden);
-		console.table(reducedGradientOutput);
+		//console.log("Separator");
+		//console.table(reducedGradientHidden);
+		//console.table(reducedGradientOutput);
 	}
 
 	weightsWithoutBias(matrix) {
