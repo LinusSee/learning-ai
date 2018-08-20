@@ -24,13 +24,9 @@ class Main {
 	}
 
 	train(iterationCount) {
-		/*for(let i = 0; i < iterationCount; i++) {
-			this.nn.train(this.xorInputs[0], this.xorOutputs[0]);
-			this.nn.train(this.xorInputs[1], this.xorOutputs[1]);
-			this.nn.train(this.xorInputs[2], this.xorOutputs[2]);
-			this.nn.train(this.xorInputs[3], this.xorOutputs[3]);
-		}*/
-		this.nn.trainBatch(this.xorInputs, this.xorOutputs);
+		for(let i = 0; i < iterationCount; i++) {
+			this.nn.trainBatch(this.xorInputs, this.xorOutputs);
+		}
 		this.evaluate();
 	}
 }
