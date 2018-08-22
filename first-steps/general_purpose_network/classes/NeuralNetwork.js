@@ -26,44 +26,56 @@ class NeuralNetwork {
 	}
 
 	trainBatch(inputs, expectedOutputs) {
-		let hiddenGradient = new Array(this.neuronsPerLayer[1]).fill().map(val => new Array(this.neuronsPerLayer[0] + 1).fill(0));
-		//console.log("HiddenGradient", hiddenGradient);
-		let outputGradient = new Array(this.neuronsPerLayer[2]).fill().map(val => new Array(this.neuronsPerLayer[1] + 1).fill(0));
-		//console.log("OutputGradient", outputGradient);
+		const gradients = [];
 
-		for(let i = 0; i < inputs.length; i++) {
-			const input = inputs[i];
-			const expectedOutput = expectedOutputs[i];
-			const net1 = math.multiply(this.weights[0], this.biasedVector(input));
-			const out1 = this.activation(net1);
-			const net2 = math.multiply(this.weights[1], this.biasedVector(out1));
-			const out2 = this.activation(net2);
+		for(let x = 0; x < inputs.length; x++) {
+			const input = inputs[x];
+			const expectedOutput = expectedOutputs[x];
 
-			const deriv1 = out1.map(val => val * (1 - val));	// Derivatives for layer 1 (hidden)
-			const deriv2 = out2.map((val, index) => (this.temp(expectedOutput[index], val)));	// Derivatives for layer 2 (output)
-			//console.log("deriv1", deriv1);
-			//console.log("deriv2", deriv2);
-			// Backpropagation starts here
-			const gradientsOutput = math.multiply(math.transpose([deriv2]), [this.biasedVector(out1)]);	// Ugly conversions because of mathjs
-			//console.log("Stuff0", gradientsOutput);
-			const continueGrad1 = math.multiply(math.transpose(this.weightsWithoutBias(this.weights[1])), deriv2);
-			//console.log("Stuff1", continueGrad1);
-			const continueGrad2 = math.dotMultiply(continueGrad1, deriv1);
-			//console.log("Stuff2", continueGrad2);
-			const gradientsHidden = math.multiply(math.transpose([continueGrad2]), [this.biasedVector(input)]);
-			//console.log("Stuff3", gradientsHidden);
+			const netValues = [];
+			const outValues = [];
 
-			hiddenGradient = math.add(hiddenGradient, gradientsHidden);
-			//console.log("Stuff4");
-			outputGradient = math.add(outputGradient, gradientsOutput);
+			outValues.push(input);
+			for(let i = 0; i < this.weights.length; i++) {
+				const net = math.multiply(this.weights[i], this.biasedVector(outValues[i]));
+				const out = this.activation(net);
+				netValues.push(net);
+				outValues.push(out);
+			}
+
+			const derivatives = outValues.slice(1).map((outArr, index, arr) => outArr.map(val => {
+				const temp = val * (1 - val);
+				if(index == (arr.length - 1)) {
+					return temp * (val - expectedOutput);
+				} else {
+					return temp;
+				}
+			}));
+
+			// Backprop
+			gradients.push(math.multiply(math.transpose([derivatives[derivatives.length - 1]]), [this.biasedVector(outValues[outValues.length - 2])]));
+			for(let i = outValues.length - 1; i > 1; i--) {
+				//console.log("Weight:", this.weights[i - 1]);
+				const step1 = math.multiply(math.transpose(this.weightsWithoutBias(this.weights[i - 1])), derivatives[i - 1]);
+				//console.log("Step1:", step1);
+				//console.table(step1);
+				//console.log("Deriv2:", derivatives[i - 2]);
+				const step2 = math.dotMultiply(step1, derivatives[i - 2]);
+				//console.log("Step2:", step2);
+				//console.log("OutVal", outValues[i - 2]);
+				const gradient = math.multiply(math.transpose([step2]), [this.biasedVector(outValues[i - 2])]);
+				gradients.push(gradient);
+			}
 		}
-		const reducedGradientHidden = math.multiply(hiddenGradient, this.learningRate);
-		const reducedGradientOutput = math.multiply(outputGradient, this.learningRate);
-		this.weights[0] = math.subtract(this.weights[0], reducedGradientHidden);
-		this.weights[1] = math.subtract(this.weights[1], reducedGradientOutput);
-		//console.log("Separator");
-		//console.table(reducedGradientHidden);
-		//console.table(reducedGradientOutput);
+		const reducedGradients = gradients.map(val => math.multiply(val, this.learningRate));
+		//console.log("Gradients:", reducedGradients);
+		for(let i = 0, j = reducedGradients.length - 1; j >= 0; i++, j--) {
+			if(i % this.weights.length == 0) {
+				i = 0;
+				//console.log("Reset");
+			}
+			this.weights[i] = math.subtract(this.weights[i], reducedGradients[j]);
+		}
 	}
 
 	weightsWithoutBias(matrix) {
