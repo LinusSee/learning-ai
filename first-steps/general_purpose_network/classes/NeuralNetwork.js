@@ -60,7 +60,8 @@ class NeuralNetwork {
 				//console.log("Step1:", step1);
 				//console.table(step1);
 				//console.log("Deriv2:", derivatives[i - 2]);
-				const step2 = math.dotMultiply(step1, derivatives[i - 2]);
+				const step2  = math.dotMultiply(step1, derivatives[i - 2]);
+				derivatives[i - 2] = step2;
 				//console.log("Step2:", step2);
 				//console.log("OutVal", outValues[i - 2]);
 				const gradient = math.multiply(math.transpose([step2]), [this.biasedVector(outValues[i - 2])]);
