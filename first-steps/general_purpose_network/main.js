@@ -1,8 +1,11 @@
 class Main {
 	constructor() {
-		this.nn = new NeuralNetwork([2, 2, 1], 0.5);
+		this.xorNet = new NeuralNetwork([2, 2, 1], 0.5);
+		this.andNet = new NeuralNetwork([2, 1], 0.5);
+		this.orNet = new NeuralNetwork([2, 1], 0.5);
+		this.bigXorNet = new NeuralNetwork([2, 2, 2, 1], 0.5);
 
-		this.xorInputs = [
+		this.gateInputs = [
 			[ 1, 1],
 			[ 1, 0],
 			[ 0, 1],
@@ -13,19 +16,49 @@ class Main {
 			[1],
 			[1],
 			[0]
-		]
+		];
+		this.andOutputs = [
+			[1],
+			[0],
+			[0],
+			[0]
+		];
+		this.orOutputs = [
+			[1],
+			[1],
+			[1],
+			[0]
+		];
 	}
 
 	evaluate() {
-		document.getElementById("outputOne").innerHTML = this.nn.feedForward(this.xorInputs[0]);
-		document.getElementById("outputTwo").innerHTML = this.nn.feedForward(this.xorInputs[1]);
-		document.getElementById("outputThree").innerHTML = this.nn.feedForward(this.xorInputs[2]);
-		document.getElementById("outputFour").innerHTML = this.nn.feedForward(this.xorInputs[3]);
+		document.getElementById("xorOutputOne").innerHTML = this.xorNet.feedForward(this.gateInputs[0]);
+		document.getElementById("xorOutputTwo").innerHTML = this.xorNet.feedForward(this.gateInputs[1]);
+		document.getElementById("xorOutputThree").innerHTML = this.xorNet.feedForward(this.gateInputs[2]);
+		document.getElementById("xorOutputFour").innerHTML = this.xorNet.feedForward(this.gateInputs[3]);
+
+		document.getElementById("andOutputOne").innerHTML = this.andNet.feedForward(this.gateInputs[0]);
+		document.getElementById("andOutputTwo").innerHTML = this.andNet.feedForward(this.gateInputs[1]);
+		document.getElementById("andOutputThree").innerHTML = this.andNet.feedForward(this.gateInputs[2]);
+		document.getElementById("andOutputFour").innerHTML = this.andNet.feedForward(this.gateInputs[3]);
+
+		document.getElementById("orOutputOne").innerHTML = this.orNet.feedForward(this.gateInputs[0]);
+		document.getElementById("orOutputTwo").innerHTML = this.orNet.feedForward(this.gateInputs[1]);
+		document.getElementById("orOutputThree").innerHTML = this.orNet.feedForward(this.gateInputs[2]);
+		document.getElementById("orOutputFour").innerHTML = this.orNet.feedForward(this.gateInputs[3]);
+
+		document.getElementById("bigXorOutputOne").innerHTML = this.bigXorNet.feedForward(this.gateInputs[0]);
+		document.getElementById("bigXorOutputTwo").innerHTML = this.bigXorNet.feedForward(this.gateInputs[1]);
+		document.getElementById("bigXorOutputThree").innerHTML = this.bigXorNet.feedForward(this.gateInputs[2]);
+		document.getElementById("bigXorOutputFour").innerHTML = this.bigXorNet.feedForward(this.gateInputs[3]);
 	}
 
 	train(iterationCount) {
 		for(let i = 0; i < iterationCount; i++) {
-			this.nn.trainBatch(this.xorInputs, this.xorOutputs);
+			this.xorNet.trainBatch(this.gateInputs, this.xorOutputs);
+			this.andNet.trainBatch(this.gateInputs, this.andOutputs);
+			this.orNet.trainBatch(this.gateInputs, this.orOutputs);
+			this.bigXorNet.trainBatch(this.gateInputs, this.xorOutputs);
 		}
 		this.evaluate();
 	}
