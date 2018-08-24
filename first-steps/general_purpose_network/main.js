@@ -4,6 +4,7 @@ class Main {
 		this.andNet = new NeuralNetwork([2, 1], 0.5);
 		this.orNet = new NeuralNetwork([2, 1], 0.5);
 		this.bigXorNet = new NeuralNetwork([2, 2, 2, 1], 0.5);
+		this.rlyBigXorNet = new NeuralNetwork([2, 6, 8, 6, 2, 1], 0.5);
 
 		this.gateInputs = [
 			[ 1, 1],
@@ -51,6 +52,11 @@ class Main {
 		document.getElementById("bigXorOutputTwo").innerHTML = this.bigXorNet.feedForward(this.gateInputs[1]);
 		document.getElementById("bigXorOutputThree").innerHTML = this.bigXorNet.feedForward(this.gateInputs[2]);
 		document.getElementById("bigXorOutputFour").innerHTML = this.bigXorNet.feedForward(this.gateInputs[3]);
+
+		document.getElementById("rlyBigXorOutputOne").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[0]);
+		document.getElementById("rlyBigXorOutputTwo").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[1]);
+		document.getElementById("rlyBigXorOutputThree").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[2]);
+		document.getElementById("rlyBigXorOutputFour").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[3]);
 	}
 
 	train(iterationCount) {
@@ -59,6 +65,7 @@ class Main {
 			this.andNet.trainBatch(this.gateInputs, this.andOutputs);
 			this.orNet.trainBatch(this.gateInputs, this.orOutputs);
 			this.bigXorNet.trainBatch(this.gateInputs, this.xorOutputs);
+			this.rlyBigXorNet.trainBatch(this.gateInputs, this.xorOutputs);
 		}
 		this.evaluate();
 	}
