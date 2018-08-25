@@ -1,0 +1,277 @@
+\documentclass[11pt, halfparskip]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{amsmath}
+
+\begin{document}
+
+    \section{Introduction}
+    \label{sec:introduction}
+	In my GitHub project \href{https://github.com/LinusSee/learning-ai/tree/master/first-steps/general_purpose_network}{general purpose network} I tried to figure out, how to apply
+	backpropagation to a network of previously unspecified size. I wanted someone to be able to create a network with a size of his choosing, without the backpropagation algorithm I
+	implemented being broken (unlike my previous project).\\
+	Most of the resources about backpropagation I found extremely confusing and the few that were helpful, like this amazing \href{https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/}{blogpost}, derived the gradients per hand for every single weights, not something that I would like to do for large networks.\\
+	So I decided to try and figure out an algorithm that works for a network of any size without it having to be specified before and doesn't calculate the gradient for every single weights
+	one after another. This is basically my attempt at explaining backpropagation, with an example, in a more understandable way than most resources I found.\\
+	I should note that while I am pretty sure that the algorithm I came up with works, and that I found that it is done pretty much the same way in this 
+	\href{http://neuralnetworksanddeeplearning.com/chap1.html}{book}, I don't know about the differences to more advanced projects than my simple exercise project. If you find any
+	error or have some helpful/interesting resource to share, feel free to contact me/create an issue on GitHub.\\
+	I will not include biases in this example (or not yet), but once you understood this article, or rather the principle I'm trying to explain, including biases into the backpropagation is
+	very simple.
+    
+    \section{Requirements}
+    \label{sec:requirements}
+    	To understand what I'm doing in this article, you need to know what the partial derivative is and how to derive it (unless you want to take my word for it).\\
+    	Also some knowledge about matrix-vector multiplication or a cheatsheet would be helpful. The german \href{https://de.wikipedia.org/wiki/Matrizenmultiplikation}{wikipedia page}
+    	has some great images displaying how different multiplications between matrices and vectors work.\\
+   	The network used in this example is the same as for the other documents in this project and can also be found 
+    	\href{https://github.com/LinusSee/learning-ai/blob/master/first-steps/general_purpose_network/assets/latex/example_network/diagram/2-4-3-2_network.pdf}{here} 
+    	(with slight notational differences), but for the sake of completeness, I added it in section \ref{sec:the_network}.
+    
+    \newpage
+    \section{The network}
+    	\label{sec:the_network}
+    	\def\layersep{2.5cm} % Seems like this defines a variable (bit like in less)
+    	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+	    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+	    \tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+	    \tikzstyle{input neuron}=[neuron, fill=green!50];
+	    \tikzstyle{output neuron}=[neuron, fill=red!50];
+	    \tikzstyle{hidden neuron}=[neuron, fill=blue!50];
+	    \tikzstyle{annot} = [text width=4em, text centered]
+
+	    % Draw the input layer nodes
+	    \foreach \name / \y in {1, 2}
+		\path[yshift=-0.5cm]
+		node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {$a_\y$};
+
+	    % Draw the hidden layer 1 nodes
+	    \foreach \name / \y in {1, ..., 4}
+		\path[yshift=0.5cm]
+		node[hidden neuron] (H1-\name) at (\layersep,-\y cm) {$b_\y$};
+
+	    % Draw the hidden layer 2 nodes
+	    \foreach \name / \y in {1, 2, 3}
+		\node[hidden neuron] (H2-\name) at (2*\layersep,-\y cm) {$c_\y$};
+
+	    % Draw the output layer nodes
+	    \foreach \name/\y in {1, 2}
+		%\node[output neuron,pin={[pin edge={->}]right:Output}, right of=H2-2] (O) {};
+		\path[yshift=-0.5cm]
+		node[output neuron, pin=right:Output \#\y] (O-\name) at (3*\layersep, -\y) {$d_\y$};
+
+	    % Connect every node in the input layer with every node in the
+	    % hidden layer.
+	    \foreach \source in {1, 2}
+		\foreach \dest in {1, ..., 4}
+			\path (I-\source) edge node(w1-\source-\dest){}(H1-\dest);
+
+	    \foreach \source in {1, ..., 4}
+		\foreach \dest in {1, 2, 3}
+			\path (H1-\source) edge node(w2-\source-\dest){} (H2-\dest);
+
+	    % Connect every node in hidden layer 2 with the output layer
+	    \foreach \source in {1, 2, 3}
+		\foreach \dest in {1, 2}
+			\path (H2-\source) edge node(w3-\source-\dest){}(O-\dest);
+
+
+	    \node[annot, above of=w1-1-1, node distance=2.5mm]{$w_{11}$};
+	    \node[annot, above of=w1-1-2, node distance=2.5mm]{$w_{12}$};
+	    \node[annot, above of=w2-1-1, node distance=1.8mm]{$w_{21}$};
+	    \node[annot, above of=w3-1-1, node distance=1.8mm]{$w_{31}$};
+	    % Annotate the layers
+	    \node[annot,above of=H1-1, node distance=1cm] (hl1) {Hidden layer 1};
+	    \node[annot,left of=hl1] {Input layer};
+	    \node[annot,right of=hl1] (hl2) {Hidden layer 2};
+	    \node[annot,right of=hl2] {Output layer};
+     	\end{tikzpicture}
+     	
+     	\noindent \\
+     	The notation of the network should mostly be self explanatory. Each layer is denoted by a letter, starting with ``a'' at the input layer and then going upwards until ``d'' for the
+     	output layer.\\
+     	The neurons in each layer are labeled by the letter of its layer and a number as its index, starting with 1 at the top of the layer and counting upwards, so $a_1$ would be the first 
+     	neuron in layer a.\\
+     	A weight is denoted by the letter w and indexed by a letter and a number. The letter is layer the weight leads to and the number the weights position in the layer. For example
+     	$w_{a1}$ is the first weight in the first layer, connecting $a_1$ and $b_1$. Weight $w_{a2}$ would be the weight connecting $a_2$ and $b_1$, $w_{a3}$ the neurons $a_1$ 
+     	and $b_2$ and so on.
+     
+    \section{Forward propagation}
+    \label{sec:forward_propagation}
+        Before starting with the backpropagation part,  let's look at how we forward propagate inputs to get our corresponding output. Here I will establish the terminology needed when
+        explaining backpropagation and it will help to understand the process of getting the gradient.\\
+        We have two inputs $a_1$ and $a_2$, lets say we use two binary inputs 
+        \[
+	    a_1 = 1,
+	    a_2 = 0,
+        \]
+        that we could use when learning a logic gate.
+    
+        \newpage
+        As weights we will use:
+        % First weight matrix connecting the input layer and first hidden layer
+        \[
+        	 W_b =
+            \begin{bmatrix}
+            	w_{b1} & w_{b2}\\
+            	w_{b3} & w_{b4}\\
+            	w_{b5} & w_{b6}\\
+            	w_{b7} & w_{b8}
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+            	0.1 & 0.2\\
+            	0.3 & 0.4\\
+            	0.5 & 0.6\\
+            	0.7 & 0.8
+            \end{bmatrix}
+        \]
+        % Second matrix connecting the first hidden layer and the second hidden layer
+        \[
+            W_c =
+            \begin{bmatrix}
+            	w_{c1} & w_{c2} & w_{c3} & w_{c4}\\
+            	w_{c5} & w_{c6} & w_{c7} & w_{c8}\\
+            	w_{c9} & w_{c10} & w_{c11} & w_{c12}
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+            	0.25 & 0.30 & 0.35 & 0.40\\
+            	0.45 & 0.50 & 0.55 & 0.60\\
+            	0.65 & 0.70 & 0.75 & 0.80
+            \end{bmatrix}
+        \]
+        % Third matrix connecting the second hidden layer and the output layer
+        \[
+            W_d =
+            \begin{bmatrix}
+            	w_{d1} & w_{d2} & w_{d3}\\
+            	w_{d4} & w_{d5} & w_{d6}\\
+            	w_{d7} & w_{d8} & w_{d9}
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+            	0.1 & 0.2 & 0.3\\
+            	0.4 & 0.5 & 0.6\\
+            	0.7 & 0.8 & 0.9
+            \end{bmatrix}
+        \]
+        Since the net value (before applying an activation function like sigmoid) of a neuron is the sum of all its weights multiplied with its corresponding inputs (e.g. the net value of the
+        neuron $b_1$ $net_{b_1} = w_{b1} * a_1 + w_{b2} * a_2$, we can use matrix multiplication to calculate all net values for a layer in a single step.\\
+        When using matrix multiplication to calculate all net inputs for layer b it looks like this
+        \[
+           net_b = W_b * a =
+        	\begin{bmatrix}
+        	 	0.1 & 0.2\\
+            	0.3 & 0.4\\
+            	0.5 & 0.6\\
+            	0.7 & 0.8
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		1\\
+        		0
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.1 * 1 + 0.2 * 0\\
+        		0.3 * 1 + 0.4 * 0\\
+        		0.5 * 1 + 0.6 * 0\\
+        		0.7 * 1 + 0.8 * 0
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.1\\
+        		0.3\\
+        		0.5\\
+        		0.7
+        	\end{bmatrix}
+        \]
+        Next we want the output $out_b$ of layer b, so we have to apply our activation function, in this case the sigmoid function, to every single element in the vector $net_b$.\\
+        Just as a reminder, the sigmoid function is $sig(x) = \frac{1}{1+ e^{-x}}$, so if you are following this example you are probably going to need a calculation from here on out.\\
+        Applying the sigmoid function we get
+        \[
+        	out_b = sig(net_b) = sig(
+        	   \begin{bmatrix}
+	        	0.1\\
+        		0.3\\
+        		0.5\\
+        		0.7
+        	   \end{bmatrix}
+        	) = 
+        	\begin{bmatrix}
+        		0.5250\\
+        		0.5744\\
+        		0.6225\\
+        		0.6682
+        	\end{bmatrix}
+        \]
+        I rounded the results to 4 decimals and will continue the calculations with the rounded values. This goes for both this current calculation, as well as the rest of the article.
+        
+        \newpage
+        If we continue propagating these results forward until the output layer we get
+        % Forwardpropagation for layer c
+        \[
+        	net_c = W_c * out_b = 
+        	\begin{bmatrix}
+        		0.25 & 0.30 & 0.35 & 0.40\\
+            	0.45 & 0.50 & 0.55 & 0.60\\
+            	0.65 & 0.70 & 0.75 & 0.80
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		0.5250\\
+        		0.5744\\
+        		0.6225\\
+        		0.6682
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.7887\\
+        		1.2667\\
+        		1.7448
+        	\end{bmatrix}
+        \]
+        \[
+        	out_c = sig(net_c) = sig(
+        	   \begin{bmatrix}
+        	   	0.7887\\
+        		1.2667\\
+        		1.7448
+        	   \end{bmatrix}
+        	) = 
+        	\begin{bmatrix}
+        		0.6876\\
+        		0.7802\\
+        		0.8513
+        	\end{bmatrix}
+        \]
+        
+        % Forwardpropagation for layer d (output layer)
+        \[
+        	net_d = W_d * out_c = 
+        	\begin{bmatrix}
+        		0.1 & 0.2 & 0.3\\
+            	0.4 & 0.5 & 0.6\\
+            	0.7 & 0.8 & 0.9
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		0.6876\\
+        		0.7802\\
+        		0.8513
+        	\end{bmatrix}
+        	        =
+        	\begin{bmatrix}
+        		
+        	\end{bmatrix}
+        \]
+
+
+        
+     \section{Backpropagation}
+     \label{sec:backpropagation}
+\end{document}
