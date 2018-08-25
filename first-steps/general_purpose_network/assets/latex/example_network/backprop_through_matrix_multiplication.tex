@@ -149,14 +149,12 @@
             W_d =
             \begin{bmatrix}
             	w_{d1} & w_{d2} & w_{d3}\\
-            	w_{d4} & w_{d5} & w_{d6}\\
-            	w_{d7} & w_{d8} & w_{d9}
+            	w_{d4} & w_{d5} & w_{d6}
             \end{bmatrix}
             =
             \begin{bmatrix}
-            	0.1 & 0.2 & 0.3\\
-            	0.4 & 0.5 & 0.6\\
-            	0.7 & 0.8 & 0.9
+            	0.3 & 0.4 & 0.5\\
+            	0.6 & 0.7 & 0.8
             \end{bmatrix}
         \]
         Since the net value (before applying an activation function like sigmoid) of a neuron is the sum of all its weights multiplied with its corresponding inputs (e.g. the net value of the
@@ -212,7 +210,7 @@
         I rounded the results to 4 decimals and will continue the calculations with the rounded values. This goes for both this current calculation, as well as the rest of the article.
         
         \newpage
-        If we continue propagating these results forward until the output layer we get
+        \noindent If we continue propagating these results forward until the output layer we get
         % Forwardpropagation for layer c
         \[
         	net_c = W_c * out_b = 
@@ -254,9 +252,8 @@
         \[
         	net_d = W_d * out_c = 
         	\begin{bmatrix}
-        		0.1 & 0.2 & 0.3\\
-            	0.4 & 0.5 & 0.6\\
-            	0.7 & 0.8 & 0.9
+        		0.3 & 0.4 & 0.5\\
+            	0.6 & 0.7 & 0.8
         	\end{bmatrix}
         	*
         	\begin{bmatrix}
@@ -266,11 +263,34 @@
         	\end{bmatrix}
         	        =
         	\begin{bmatrix}
-        		
+        		0.9441\\
+        		1.6397
+        	\end{bmatrix}
+        \]
+        \[
+        	out_d = sig(net_d) = sig(
+        	\begin{bmatrix}
+        		0.9441\\
+        		1.6397
+        	\end{bmatrix}
+        	) = 
+        	\begin{bmatrix}
+        		0.7199\\
+        		0.8375
         	\end{bmatrix}
         \]
 
-
+        \noindent \\
+        Now that we reached the output of layer d we also have the output of our network. Our first output neuron $d_1$ has the value 0.7199 and our second one $d_2$ the 
+        value 0.8375.\\
+        These two values are our networks guess for what the output should be when the input values we chose earlier are plugged in. With that we are basically done with the forward
+        propagation part, since no matter the weights, the process will remain the same. Before moving on to the backpropagation part though, I would like to mention something
+        noteworthy, that will be helpful for understanding backpropagation.\\
+        When forward propagating, we started with our inputs and in the end got our outputs. The way we calculated them is by multiplying matrices, applying an activation function, then
+        again multiplying matrices and so on. Basically the entire forward propagation process is nothing but the chaining of functions, the matrix multiplication being one and the
+        activation function being another. Every intermediate result, e.g. $net_b$ is immediately passed on to the next function until we get the output.\\
+        This is noteworthy, because later we will need to derive this gigantic chain of functions, so we can train our network. For this, as you might have guessed, the chain rule is perfect.
+        
         
      \section{Backpropagation}
      \label{sec:backpropagation}
