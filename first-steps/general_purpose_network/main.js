@@ -65,10 +65,14 @@ class Main {
 		document.getElementById("rlyBigXorOutputThree").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[2]);
 		document.getElementById("rlyBigXorOutputFour").innerHTML = this.rlyBigXorNet.feedForward(this.gateInputs[3]);
 
-		document.getElementById("switchOutputOne").innerHTML = this.switchNet.feedForward(this.gateInputs[0]);
-		document.getElementById("switchOutputTwo").innerHTML = this.switchNet.feedForward(this.gateInputs[1]);
-		document.getElementById("switchOutputThree").innerHTML = this.switchNet.feedForward(this.gateInputs[2]);
-		document.getElementById("switchOutputFour").innerHTML = this.switchNet.feedForward(this.gateInputs[3]);
+		document.getElementById("switchOutputOneOne").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[0])[0] * 10000) / 10000;
+		document.getElementById("switchOutputOneTwo").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[0])[1] * 10000) / 10000;
+		document.getElementById("switchOutputTwoOne").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[1])[0] * 10000) / 10000;
+		document.getElementById("switchOutputTwoTwo").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[0])[1] * 10000) / 10000;
+		document.getElementById("switchOutputThreeOne").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[2])[0] * 10000) / 10000;
+		document.getElementById("switchOutputThreeTwo").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[0])[1] * 10000) / 10000;
+		document.getElementById("switchOutputFourOne").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[3])[0] * 10000) / 10000;
+		document.getElementById("switchOutputFourTwo").innerHTML = Math.round(this.switchNet.feedForward(this.gateInputs[0])[1] * 10000) / 10000;
 	}
 
 	train(iterationCount) {
