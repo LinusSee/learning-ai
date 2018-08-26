@@ -9,8 +9,8 @@ class NeuralNetwork {
 			this.weights[i] = new Array(neuronsPerLayer[i + 1]).fill().map(val => new Array(neuronsPerLayer[i] + 1).fill().map(val => Math.random() * 2 - 1));
 		}
 		//console.table(this.weights);
-		console.table(this.weights[0]);
-		console.table(this.weights[1]);
+		//console.table(this.weights[0]);
+		//console.table(this.weights[1]);
 	}
 
 	feedForward(inputVector) {
