@@ -294,4 +294,31 @@
      \newpage
      \section{Backpropagation}
      \label{sec:backpropagation}
+     \subsection{The error}
+     \label{sec:the:error}
+     Before we can start with the backpropagation itself, we need something we can actually propagate back. Since we want to train the network, we need to know how wrong our
+     guesses were for those inputs and then use the gradient (derivative) to move into the right direction, so it improves.\\
+     For this we will use an error function, the squared error 
+     \begin{equation}
+     	E_{total} = \sum \frac{1}{2}(target - out)^2
+    \end{equation}
+    In this equation we subtract the actual value we got from the target value we wanted. I multiplied by 1/2 here so it cancels out with the square when deriving the function later on.\\
+    The total error $E_{total}$ is the sum of all those errors calculated for every single output neuron. For different inputs we could get a totally different output and so our error could 
+    be totally different as well. \\
+    If we wanted only the error for $d_1$ (for the inputs we chose earlier) it would be 
+    \[
+    	E_{d_1} = \sum \frac{1}{2}(target_{d_1} - out_{d_1})
+    \]
+    From here on out it will be hard to continue without a target output for out network, so let's say it takes the two inputs $a_1$ and $a_2$ and its job is to reverse, or rather switch
+     them. This would mean out inputs and corresponding outputs are.
+    \begin{center}
+	    \begin{tabular}{l l c c c}
+	    	$a_1$ & $a_2$ &  & $d_1$/$out_{d_1}$ & $d_2$/$out_{d_2}$\\
+    		\hline
+	    	1 & 1 & = & 1 & 1\\
+    		1 & 0 & = & 0 & 1\\
+	    	0 & 1 & = & 1 & 0\\
+    		0 & 0 & = & 0 & 0
+    	\end{tabular}
+    \end{center}
 \end{document}
