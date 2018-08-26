@@ -43,10 +43,10 @@ class NeuralNetwork {
 				outValues.push(out);
 			}
 
-			const derivatives = outValues.slice(1).map((outArr, index, arr) => outArr.map(val => {
+			const derivatives = outValues.slice(1).map((outArr, index, arr) => outArr.map((val, curIndex) => {
 				const temp = val * (1 - val);
 				if(index == (arr.length - 1)) {
-					return temp * (val - expectedOutput);
+					return temp * (val - expectedOutput[curIndex]);
 				} else {
 					return temp;
 				}
