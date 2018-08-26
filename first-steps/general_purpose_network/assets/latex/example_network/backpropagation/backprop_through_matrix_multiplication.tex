@@ -299,7 +299,8 @@
      Before we can start with the backpropagation itself, we need something we can actually propagate back. Since we want to train the network, we need to know how wrong our
      guesses were for those inputs and then use the gradient (derivative) to move into the right direction, so it improves.\\
      For this we will use an error function, the squared error 
-     \begin{equation}
+     \begin{equation} 
+     \label{eq:squared_error}
      	E_{total} = \sum \frac{1}{2}(target - out)^2
     \end{equation}
     In this equation we subtract the actual value we got from the target value we wanted. I multiplied by 1/2 here so it cancels out with the square when deriving the function later on.\\
@@ -310,10 +311,10 @@
     	E_{d_1} = \sum \frac{1}{2}(target_{d_1} - out_{d_1})
     \]
     From here on out it will be hard to continue without a target output for out network, so let's say it takes the two inputs $a_1$ and $a_2$ and its job is to reverse, or rather switch
-     them. This would mean out inputs and corresponding outputs are.
+    them. This would mean our inputs and corresponding outputs are.
     \begin{center}
-	    \begin{tabular}{l l c c c}
-	    	$a_1$ & $a_2$ &  & $d_1$/$out_{d_1}$ & $d_2$/$out_{d_2}$\\
+	    \begin{tabular}{c c c c c}
+	    	$a_1$ & $a_2$ &  & $out_{d_1}$ & $out_{d_2}$\\
     		\hline
 	    	1 & 1 & = & 1 & 1\\
     		1 & 0 & = & 0 & 1\\
@@ -321,4 +322,70 @@
     		0 & 0 & = & 0 & 0
     	\end{tabular}
     \end{center}
+    
+    \noindent \newline
+    Our goal is to make the network learn, which simply means we want its guesses to be as close to the correct output as possible. But you could also put it in other word, we want our
+    error to be as low as possible. Since we have a function \ref{eq:squared_error} that calculates the error, our goal will be to find the minimal possible value for the function.\\
+    
+    \newpage
+    \noindent
+    For this we will use gradient descent (I will not go into detail here, so if you need a refreshed, feel free to look it up) and for that we will calculate the first derivative of the error
+    function. The only value in the function that we can really influence is the output, therefore we will take the partial derivative with respect to it.
+    \begin{equation}
+    \label{eq:squared_error_derivative}
+    	\frac{\partial E_{total}}{\partial out} = \frac{1}{2}*2*(target - out) * (-1) = (out - target)
+    \end{equation}
+    
+    \noindent \newline
+    Now that we have both our error function and its derivative and, in theory, can minimize the error. But right now we only derived with respect to the output, so how do we tell the
+    network how it can get closer to that output? For that let's look at what our network consists of.\\
+    We have our inputs and our weights, as well as an activation function. Changing the inputs would make no sense, after all we want to come closer to our target values for exactely
+    those inputs.\\
+    Similar for the activation function, while we can choose between several functions and could even choose different ones for different layers, they are fixed once chosen
+    and we can't change them.\\
+    So all that is left to change are out weights, which makes sense, since those are the only values that are indepentent for each layer and since they do the actual work in our network.\\
+    In other words, the variables we want to derive the error with respect to are the weights. This means we have to derive the error with respect to every single weight to get its
+    gradient and then adjust the network accordingly.\\
+    Let's derive for a weight in the last layer, for example $w_{d1}$. We then, without yet plugging in values or variables, get
+    \begin{equation}
+    \label{eq:output_layer_derivative}
+    	\frac{\partial E_{total}}{\partial w_{d1}} = \frac{\partial E_{total}}{\partial out_{d_1}} \frac{\partial out_{d_1}}{\partial net_{d_1}} \frac{\partial net_{d_1}}{\partial w_{d1}}
+    \end{equation}
+    If this step isn't clear think about what I wrote at the end of section \ref{sec:forward_propagation}.\\
+    The entire network is nothing but a chaining of functions and when deriving the error with respect to $w_{d1}$, we therefore apply the chain rule. When looking at it from the right 
+    (the weight first) we have all weights of the neuron multiplied, equaling the net value of $d_1$. This net value is chained with the activation function, equaling the out value of $d_1$.
+    This again is chained, this time with the error function.\\
+    As we are deriving with respect to $w_{d1}$, every connection that does not contain this weight will result in 0 when derived, that is why in \ref{eq:output_layer_derivative}, only
+    $out_{d_1}$ and $net_{d_1}$ are relevant. Every other connection doesn't contain $w_{d1}$ and will therefore drop out anyway.
+    
+    \noindent \newline
+    Now let's plug in our formulas. We then get
+    \[
+    	\frac{\partial E_{total}}{\partial w_{d1}} = (out_{d_1} - target_{d_1}) * (out_{d_1} * (1 - out_{d_1})) * out_{c_1}
+    \]
+    If you are wondering where the second parameter comes from, this is the derivative of the sigmoid function, our activation function.\\
+    The sigmoid function is $sig(x) = \frac{1}{1 + e^{-x}}$ and it's derivative is \\$sig'(x) = sig(x) * (1 - sig(x))$. The value we plug into sig(x) as x is (for this neuron) $net_{d_1}$.
+    But since $sig(net_{d_1}) = out_{d_1}$, we can just write $out_{d_1}$ instead.\\
+    This process is similar for all output neurons, for example 
+    \[
+    	\frac{\partial E_{total}}{\partial w_{d4}} = \frac{\partial E_{total}}{\partial out_{d_2}} \frac{\partial out_{d_2}}{\partial net_{d_2}} \frac{\partial net_{d_2}}{\partial w_{d4}}
+    \]
+    and with the values plugged in
+    \[
+    	\frac{\partial E_{total}}{\partial w_{d1}} = (out_{d_2} - target_{d_2}) * (out_{d_2} * (1 - out_{d_2})) * out_{c_1}
+    \]
+    
+    \noindent \newline
+    For the first layer (or the last, depending on the point of view) this process is relatively easy, most terms just drop out. If you go to the next layer it already gets harder, as more
+    neurons are being influenced by the chosen weight. Continuing this by hand is tedious, but for a few layers with only a few neurons still possible without too much effort. Most
+    networks are far more complex though and would need an overwhelming amount of work to be derived by hand. And even more important, the network would be fixed to it's current
+    size, for every different combination of layers and neurons you would have to do the entire process again.\\
+    We would like a more generic solution, one that we can apply no matter the size of the network, just like the simply matrix multiplication when propagating forward.\\
+    In other words, we need to find some pattern that we can use and put into a formula.
+    
+    \newpage
+    \subsection{Finding a pattern for backpropagation}
+    \label{sec:finding_a_pattern_for_backpropagation}
+    Earlier in section \ref{eq:output_layer_derivative} we split the derivative into three separate factors. The first contains the error 
+    
 \end{document}
