@@ -324,6 +324,10 @@
     \end{center}
     
     \noindent \newline
+    \begin{tiny}
+    Note: You might have noticed that I'm using the output even though we are doing backpropagation. This is because when calculating the gradient you will always need the net and out
+    values of every layer of the network. In other words we have to first propagate forward, save the values and then we can start backpropagating.\\
+    \end{tiny}
     Our goal is to make the network learn, which simply means we want its guesses to be as close to the correct output as possible. But you could also put it in other word, we want our
     error to be as low as possible. Since we have a function \ref{eq:squared_error} that calculates the error, our goal will be to find the minimal possible value for the function.\\
     
@@ -386,6 +390,312 @@
     \newpage
     \subsection{Finding a pattern for backpropagation}
     \label{sec:finding_a_pattern_for_backpropagation}
-    Earlier in section \ref{eq:output_layer_derivative} we split the derivative into three separate factors. The first contains the error 
+    Earlier in section \ref{eq:output_layer_derivative} we split the derivative into three separate factors. The first contains the error with respect to the output of the neuron that is
+    influenced by the weight we want to calculate the gradient for. The second factor is the output with respect the the net value and the third the net value with respect to the weight.\\
+    As the error function will only be used once to calculate the error of the network, this part of the equation is specific to the output layer.\\
+    But before we move on to different layers, let's try to find a way to calculate the gradient for all our weights in the output layer using matrix multiplication. The matrix $W_d$ is a 2x3
+    Matrix, so if we want a gradient for every weight in this matrix, a 2x3 gradient matrix should be our goal.\\
+    One way to achive this is by multiplying a column vector with a row vector. The resulting matrix would then have the row count of the column vector and the column count of the row
+    vector. To get a 2x3 matrix we would need a 2 row column vector (or 2x1 matrix) and a 3 column row vector (or 1x3 matrix).\\
+    To make this part clearer, here a short example
+    \begin{equation}
+    \label{eq:column_times_row_example}
+    	\begin{bmatrix}
+    		2\\
+    		4
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		3 & 5 & 7
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		6 & 10 & 14\\
+    		12 & 20 & 28
+    	\end{bmatrix}
+    \end{equation}
     
+    \noindent \newline
+    As our output layer (layer d) has two neurons and it's preceding layer (layer c) has three neurons, lets try to use those. So how could we use our output layer as a two column
+    vector?\\
+    For that you might want to check out equation \ref{eq:output_layer_derivative} again, because for any specific output neuron $d_n$, the first two factors will always be the derivative
+    of the error with respect to its output and of the output with respect to its input. Only the last factor contains a value of another layer, namely the output of the neuron that our
+    connection (the weight we derive with respect to) leads to.\\
+    Now if the derived values for any output neuron $d_n$ are always the same, let's calculate them. We won't need them just yet, but it hopefully clears up why they stay the same.\\
+    \[
+	\frac{\partial E_{total}}{\partial net_{d_1}} = \frac{\partial E_{total}}{\partial out_{d_1}} \frac{\partial out_{d_1}}{\partial net_{d_1}} = (out_{d_1} - target_{d_1}) * 
+	out_{d_1} * (1 - out_{d_1})
+    \]
+    \[
+	\frac{\partial E_{total}}{\partial net_{d_2}} = \frac{\partial E_{total}}{\partial out_{d_2}} \frac{\partial out_{d_2}}{\partial net_{d_2}} = (out_{d_2} - target_{d_2}) * 
+	out_{d_2} * (1 - out_{d_2})
+    \]
+    
+    \newpage
+    \noindent
+    Before we continue, let's look at how our target matrix would look like, for now without concrete values
+    \[
+    	W_{d_g} = 
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * \frac{\partial net_ {d_1}}{\partial w_{d1}} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * \frac{\partial net_ {d_1}}{\partial w_{d2}} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * \frac{\partial net_ {d_1}}{\partial w_{d3}} & \\
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * \frac{\partial net_ {d_1}}{\partial w_{d4}} &
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * \frac{\partial net_ {d_1}}{\partial w_{d5}} & 
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * \frac{\partial net_ {d_1}}{\partial w_{d6}}
+    	\end{bmatrix}
+    \]
+    I will use g subscript to denote a gradient and in this case the gradient matrix for the weights of layer d.\\
+    If we simplify the second factor of every matrix field we get
+    \[
+    	W_{d_g} = 
+    	\begin{bmatrix}
+	    	\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_1} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_2} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_3} & \\
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_1} &
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_2} & 
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_3}
+    	\end{bmatrix}
+    \]
+    
+    \noindent \newline
+    Seeing our goal, you might already realize where this leads to. For our output layer, the gradient of a weight is always the derivative of an output neuron multiplied by the output of
+    the neuron it is connected to (from the preceding layer).\\
+    So we have our column vector with its derivatives and we need a row vector with three values. As our preceding layer c has exactely three values and they even are the output
+    values we want, the obvious choice would be to put them in a row vector and try out if we get our desired result.
+    \[
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{d_1}}\\
+    		\frac{\partial E_{total}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		out_{c_1} & out_{c_2} & out_{c_3}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+	    	\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_1} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_2} & 
+    		\frac{\partial E_{total}}{\partial net_{d_1}} * out_{c_3} & \\
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_1} &
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_2} & 
+    		\frac{\partial E_{total}}{\partial net_{d_2}} * out_{c_3}
+    	\end{bmatrix}
+    \]
+    And yes, we actually got exactely what we wanted. We now calculated the gradient of the output layer and, more importantly, did so with a simple matrix multiplication instead of
+    deriving it for every weight by hand.\\
+    The only things we have to derive is the neurons, which (in code) is easily implemented by a loop.
+    
+    \newpage
+    \noindent
+    Next, let's try and figure out if and how we can use this for further layers. Before we can get to that though, we need to know how the derivative of the next layer would actually
+    look like. If we write it in the same form as in equation \ref{eq:output_layer_derivative} we get
+    \begin{equation}
+    \label{eq:hidden_layer_two_derivative}
+    	\frac{\partial E_{total}}{\partial w_{c1}} = \frac{\partial E_{total}}{\partial out_{c_1}} \frac{\partial out_{c_1}}{\partial net_{c_1}} \frac{\partial net_{c_1}}{\partial w_{c1}}
+    \end{equation}
+    and if we split this up a little more we get
+    \begin{equation}
+    \label{eq:hidden_layer_two_split_derivative}
+    	\frac{\partial E_{total}}{\partial w_{c1}} = (\frac{\partial E_{d_1}}{\partial out_{c_1}} + \frac{\partial E_{d_2}}{\partial out_{c_1}})
+    	\frac{\partial out_{c_1}}{\partial net_{c_1}} \frac{\partial net_{c_1}}{\partial w_{c1}}
+    \end{equation}
+    If you are not sure how I came up with these equations, take your time to go through the math, in the end it is only the chain rule applied over and over again.
+    
+    \noindent \newline
+    You can see that we have three factors, one being a sum of two derivatives. Before we move on to the other derivatives, let's calculate those.
+    \begin{equation}
+    \label{eq:error_d1_with_respect_to_c1}
+    	\frac{\partial E_{d_1}}{\partial out_{c_1}} = \frac{\partial E_{d_1}}{\partial out_{d_1}} \frac{\partial out_{d_1}}{\partial net_{d_1}} 
+    	\frac{\partial net_{d_1}}{\partial out_{c_1}} = (out_{d_1} - target_{d_1}) * (out_{d_1} * (1 - out_{d_1})) * w_{d1}
+    \end{equation}
+    \begin{equation}
+    \label{eq:error_d2_with_respect_to_c2}
+    	\frac{\partial E_{d_2}}{\partial out_{c_1}} = \frac{\partial E_{d_2}}{\partial out_{d_2}} \frac{\partial out_{d_2}}{\partial net_{d_2}} 
+    	\frac{\partial net_{d_2}}{\partial out_{c_1}} = (out_{d_2} - target_{d_2}) * (out_{d_2} * (1 - out_{d_2})) * w_{d4}
+    \end{equation}
+    
+    \noindent \newline
+    As long as we always derive with respect to a weight connecting to $c_1$ the first factor will always stay the same. This obviously goes for every neuron $c_n$. While the start is
+    different when using a weight connecting to a different neuron, it is always the same when the weight is connected to the same neuron.
+    
+    \newpage \noindent
+    When looking at equations \ref{eq:error_d1_with_respect_to_c1} and \ref{eq:error_d2_with_respect_to_c2}, we see that this also means, that the weights will stay the same.\\
+    So how can we multiply the weights times the derivative of layer d to get this first factor?\\
+    The first choice might be multiplying them just like when forward propagating, which would look like this
+    \[
+    	W_c * derivative(d) = 
+    	\begin{bmatrix}
+    		w_{d1} & w_{d2} & w_{d3}\\
+            	w_{d4} & w_{d5} & w_{d6}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		\frac{\partial E_{d_1}}{\partial net_{d_1}}\\
+    		\frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	= ?
+    \]
+    But as the columns of the matrix and the rows of the vector must match up, which they don't, this won't work.\\
+    I denoted derivative(d) as the vector of the derivative of all neurons in the layer. Usually this means $derivative(x) = \frac{\partial out_x}{net_x}$. For the output layer this means 
+    I will keep using this notation later on, because otherwise equations might get quite a bit longer.\\
+    We know that our weight matrix's size is always the number of neurons in the current layer times the number of neurons in the preceding layer. But this was made for forward 
+    propagation, now that we are going the other way, we have to reverse it. For this, we will use the transpose of the matrix (nothing complicated, look it up if you are not sure what it
+    is).\\
+    With this we get
+    \[
+    	(W_c)^T * derivative(d) = 
+    	\begin{bmatrix}
+    		w_{d1} & w_{d4}\\
+            	w_{d2} & w_{d5}\\
+            	w_{d3} & w_{d6}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		\frac{\partial E_{d_1}}{\partial net_{d_1}}\\
+    		\frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    \]
+    Looks good, let's see what our results are
+    \[
+    	\begin{bmatrix}
+    		w_{d1} & w_{d4}\\
+            	w_{d2} & w_{d5}\\
+            	w_{d3} & w_{d6}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		\frac{\partial E_{d_1}}{\partial net_{d_1}}\\
+    		\frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    \]
+    Perfect, if you compare this with equation \ref{eq:hidden_layer_two_split_derivative}, you can see that the first row in the resulting vector equals the first factor of the equation.\\
+    Since the first row is the first factor for every weight connecting layer b to $c_1$, the second row is the factor for every weight connecting layer b to $c_2$ and the third for $c_3$.\\
+    In other word we now have a vector with all the results we need to continue calculating the gradient for layer c.
+    
+    \newpage \noindent
+    Looking back at equation \ref{eq:hidden_layer_two_split_derivative} again, we can now try to figure out our next factor. Well $\frac{\partial out_{c_1}}{\partial net_{c_1}}$ is just
+    the derivative of this neuron (derivative($c_1$)), which we want to multiply times the first row of the vector we just calculated.\\
+    This would be if we just want the gradient for the weights connecting layer b to $c_1$, but we want it for all neurons $c_n$, so what do we do? Well, the solution is pretty obvious 
+    here, we have a vector with 3 rows with each containing the factors we need and we have a vector with 3 rows containing the derivative of layer c. So let's just multiply them
+    (elementwise).
+    \[
+    	\begin{bmatrix}
+    		w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	* derivative(c) =
+    	\begin{bmatrix}
+    		w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		\frac{\partial out_{c_1}}{\partial net_{c_1}}\\
+    		\frac{\partial out_{c_2}}{\partial net_{c_2}}\\
+    		\frac{\partial out_{c_3}}{\partial net_{c_3}}
+    	\end{bmatrix}
+    \]
+    \[
+    	\begin{bmatrix}
+    		w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}\\
+    		w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		\frac{\partial out_{c_1}}{\partial net_{c_1}}\\
+    		\frac{\partial out_{c_2}}{\partial net_{c_2}}\\
+    		\frac{\partial out_{c_3}}{\partial net_{c_3}}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		(w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_1}}{\partial net_{c_1}}\\
+    		(w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_2}}{\partial net_{c_2}}\\
+    		(w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_3}}{\partial net_{c_3}}
+    	\end{bmatrix}
+    \]
+    
+    \noindent \\
+    This might get a little confusing, since there is quite a lot going on now, so take your time to check that this equals the formulas we devised earlier. The only difference is that these
+    are the derivatives for all neurons in layer c, not only one.\\
+    While there isn't much left until we have the gradient for layer c, continuing with this bloated matrix/vector will only make things more confusing, so I'll write it a little shorter.
+    \[
+    	\begin{bmatrix}
+    		(w_{d1} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d4} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_1}}{\partial net_{c_1}}\\
+    		(w_{d2 }* \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d5} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_2}}{\partial net_{c_2}}\\
+    		(w_{d3} * \frac{\partial E_{d_1}}{\partial net_{d_1}} + w_{d6} * \frac{\partial E_{d_2}}{\partial net_{d_2}}) * \frac{\partial out_{c_3}}{\partial net_{c_3}}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{c_1}}\\
+    		\frac{\partial E_{total}}{\partial net_{c_2}}\\
+    		\frac{\partial E_{total}}{\partial net_{c_3}}
+    	 \end{bmatrix}
+    \]
+    
+    \noindent \\
+    Again, if you are not sure why those are equal, compare it to equation \ref{eq:hidden_layer_two_derivative} or \ref{eq:hidden_layer_two_split_derivative}.
+    
+    \newpage \noindent
+    Alright, we are almost at the end of calculating the gradient for this layer, all that is missing, is the last factor. Checking equation \ref{eq:hidden_layer_two_derivative} we that
+    this is $\frac{\partial net_{c_1}}{\partial w_{c1}}$.\\
+    You might already have noticed, that we are now at exactely the same point as earlier, when we calculated the gradient for the output layer.\\
+    We are one step away from our gradient matrix, which once again should be the same size as the weight matrix of layer c ($W_c$). Since we calculated our column vector just
+    now, all that is left is our row vector. If you need a quick refresher, check out example equation \ref{eq:column_times_row_example}.\\
+    As the last factor is again the derivative of the net value of the layer with respect to a weight, we can just use the out values of layer b as our row vector(just like the output of
+    layer c earlier).\\
+    We then get the following matrix
+    \[
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{c_1}}\\
+    		\frac{\partial E_{total}}{\partial net_{c_2}}\\
+    		\frac{\partial E_{total}}{\partial net_{c_3}}
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+    		out_{c_1} & out_{c_2} & out_{c_3}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_3}\\
+    		\frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_3}\\
+    		\frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_3}
+    	\end{bmatrix}
+    \]
+    \[
+    	W_{c_g} = 
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_1}} * out_{c_3}\\
+    		\frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_2}} * out_{c_3}\\
+    		\frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_1} & \frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_2}
+    		& \frac{\partial E_{total}}{\partial net_{c_3}} * out_{c_3}
+    	\end{bmatrix}
+    \]
+    
+    \noindent \\
+    And we are done. We just calculated the gradient matrix for layer c. Since this was probably quite a bit to take in, I will provide a short summary in the next section, but before we
+    get to that, what if we had more than two layers? After all, even this example network has more than only those two.\\
+    If you do backpropagation with matrix multiplication you can, just like when propagating forward, always keep going, no matter how many layers the network has. I didn't want to
+    keep going on to the third layer, since the equations were pretty long for the second layer already and it woud therefore probably be more confusing than helpful.\\
+    To understand how you can apply this for any amount of layer I will give a short summary and a code example of how you could implement it.
+    
+    \newpage
+    \section{Summary}
+    \label{sec:summary}
+    \noindent
 \end{document}
