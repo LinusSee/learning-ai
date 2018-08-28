@@ -314,7 +314,7 @@
     them. This would mean our inputs and corresponding outputs are.
     \begin{center}
 	    \begin{tabular}{c c c c c}
-	    	$a_1$ & $a_2$ &  & $out_{d_1}$ & $out_{d_2}$\\
+	    	$a_1$ & $a_2$ &  & $target_{d_1}$ & $target_{d_2}$\\
     		\hline
 	    	1 & 1 & = & 1 & 1\\
     		1 & 0 & = & 0 & 1\\
@@ -692,7 +692,8 @@
     get to that, what if we had more than two layers? After all, even this example network has more than only those two.\\
     If you do backpropagation with matrix multiplication you can, just like when propagating forward, always keep going, no matter how many layers the network has. I didn't want to
     keep going on to the third layer, since the equations were pretty long for the second layer already and it woud therefore probably be more confusing than helpful.\\
-    To understand how you can apply this for any amount of layer I will give a short summary and a code example of how you could implement it.
+    To understand how you can apply this for any amount of layer I will give a short summary and an example of how you could implement it.\\
+    Also, in the example, I will explain how you use these gradient values to actually make the network learn.
     
     \newpage
     \section{Summary}
@@ -730,6 +731,367 @@
     \[
     	d_1 = 0, d_2 = 1
     \]
-    Note: You can try this out yourself if you want, I tested if the chosen network can fulfill this task and it worked for me.\\
+    Note: You can try this out yourself if you want, I tested if the chosen network can fulfill this task and it worked for me.
+    
+    \noindent \\
+    Alright, let's start with the \textbf{output layer}:\\
+    First we need the derivative of the error with respect to the output layer's net value, which will be a vector with two rows (the count of neurons in the output layer).
+    \[
+    	\frac{\partial E_{total}}{\partial net_d} = 
+    	\begin{bmatrix}
+    		\frac{\partial E_{total}}{\partial net_{d_1}}\\
+    		\frac{\partial E_{total}}{\partial net_{d_2}}
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		(out_{d_1} - target_{d_1}) * out_{d_1} * (1 - out_{d_1})\\
+    		(out_{d_2} - target_{d_2}) * out_{d_2} * (1 - out_{d_2})
+    	\end{bmatrix}
+    \]
+    \[
+    	\begin{bmatrix}
+    		(out_{d_1} - target_{d_1}) * out_{d_1} * (1 - out_{d_1})\\
+    		(out_{d_2} - target_{d_2}) * out_{d_2} * (1 - out_{d_2})
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		(0.7199 - 0) * 0.7199 * (1 - 0.7199)\\
+    		(0.8375 - 1) * 0.8375 * (1 - 0.8375)
+    	\end{bmatrix}
+    \]
+    \[
+    	\begin{bmatrix}
+    		(0.7199 - 0) * 0.7199 * (1 - 0.7199)\\
+    		(0.8375 - 1) * 0.8375 * (1 - 0.8375)
+    	\end{bmatrix}
+    	=
+    	\begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix}
+    \]
+    Now we have the derivative of the error with respect to $net_d$, which we can use to calculate the output layer's gradient and need to continue with the next layer. But first things
+    first, let's calculate the output layers gradient.
+    \[
+	W_{d_g} = \frac{\partial E_{total}}{\partial net_d} * (out_c)^T =
+	\begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+        		0.6876\\
+        		0.7802\\
+        		0.8513
+        	\end{bmatrix}^T
+    \]
+    \[
+    	\begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+        		0.6876\\
+        		0.7802\\
+        		0.8513
+        	\end{bmatrix}^T
+        	=
+        	\begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+        		0.6876 & 0.7802 & 0.8513
+        	\end{bmatrix}
+    \]
+    \[
+    	\begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix}
+    	*
+    	\begin{bmatrix}
+        		0.6876 & 0.7802 & 0.8513
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0998 & 0.1133 & 0.1236\\
+        		-0.0152 & -0.0172 & -0.0188
+        	\end{bmatrix}
+    \]
+    And that's it for the output layer already, we have our gradient matrix $W_{c_g}$.
+    
+    \newpage \noindent
+    I mentioned before that we will still need $\frac{\partial E_{total}}{\partial net_d}$ to continue with the next layer and now is the time. Our next goal is the gradient for layer c.\\
+    First step is to figure out the derivative of the error with respect to the current layers out value, in this case $out_c$.\\
+    \[
+    	\frac{\partial E_{total}}{\partial out_c} = (W_d)^T * \frac{\partial E_{total}}{\partial net_d} = 
+    	\begin{bmatrix}
+            	0.3 & 0.6\\
+            	0.4 & 0.7\\
+            	0.5 & 0.8
+            \end{bmatrix}
+            *
+           \begin{bmatrix}
+    		0.1452\\
+    		-0.0221
+    	\end{bmatrix} 
+    	=
+    	\begin{bmatrix}
+    		0.0303\\
+    		0.0426\\
+    		0.0529
+    	 \end{bmatrix}
+    \]
+    In the next step we derive further, with respect to $net_c$
+    \[
+    	\frac{\partial E_{total}}{\partial net_c} = \frac{\partial E_{total}}{\partial out_c}\frac{\partial out_c}{\partial net_c} = \frac{\partial E_{total}}{\partial out_c} * derivative(c) =    	
+    	\begin{bmatrix}
+    		0.0303\\
+    		0.0426\\
+    		0.0529
+    	 \end{bmatrix}
+    	 *
+    	 sig'(
+    	 \begin{bmatrix}
+        		0.6876\\
+        		0.7802\\
+        		0.8513
+        	\end{bmatrix})
+    \]
+    \[
+    	\begin{bmatrix}
+    		0.0303\\
+    		0.0426\\
+    		0.0529
+    	 \end{bmatrix}
+    	 *
+    	 sig'(
+    	 \begin{bmatrix}
+        		0.7887\\
+        		1.2667\\
+        		1.7448
+        	\end{bmatrix}
+        	) =
+        	\begin{bmatrix}
+    		0.0303\\
+    		0.0426\\
+    		0.0529
+    	 \end{bmatrix}
+    	 *
+    	 \begin{bmatrix}
+        		0.2148\\
+        		0.1715\\
+        		0.1266
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0065\\
+        		0.0073\\
+        		0.0070
+        	\end{bmatrix}
+    \]
+    And for the last step, now that we have this derivative, we can again multiply it as a column vector with the row vector of the next layers output (layer b) to get the gradient matrix
+    $W_{c_g}$
+    \[
+    	W_{c_g} = \frac{\partial E_{total}}{\partial net_c} * (out_b)^T = 
+    	\begin{bmatrix}
+        		0.0065\\
+        		0.0073\\
+        		0.0070
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		0.5250 & 0.5744 & 0.6225 & 0.6682
+        	\end{bmatrix}
+    \]
+    \[
+    	\begin{bmatrix}
+        		0.0065\\
+        		0.0073\\
+        		0.0070
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		0.5250 & 0.5744 & 0.6225 & 0.6682
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0034 & 0.0037 & 0.0040 & 0.0043\\
+        		0.0038 & 0.0042 & 0.0045 & 0.0049\\
+        		0.0037 & 0.0040 & 0.0044 & 0.0047
+        	\end{bmatrix}
+    \]
+    And again, we are done and now have the gradient matrix $W_{c_g}$ for layer c.\\
+    You might have noticed there was an additional step compared to the output layer. When calculating the gradient for the output layer we didn't need any multiplication with a
+    weight matrix.\\
+    This is simply because you only need it when you derive further than one layer, but since the output layer is the first, we only derive for one layer.\\
+    So for every further layer we will need a weight matrix to calculate the gradient. We will actually need all weight matrices preceding the layer we are calculating the gradient for, but
+    since we can use our intermediate result (the derivative of the error with respect to the previous layer's net value), all matrices but the current one are already part of this value.
+    
+    \newpage \noindent
+    Just like we needed $\frac{\partial E_{total}}{\partial net_d}$ for layer c earlier, we now need $\frac{\partial E_{total}}{\partial net_c}$ for layer b now.\\
+    Since we still have those values from our previous calculations, we can go right ahead with step one, just like for layer c and calculate the error with respect to $out_b$.
+    \[
+  	\frac{\partial E_{total}}{\partial out_b} = (W_c)^T * \frac{\partial E_{total}}{\partial net_c} = 
+  	\begin{bmatrix}
+            	0.25 & 0.45 & 0.65\\
+            	0.30 & 0.50 & 0.70\\
+            	0.35 & 0.55 & 0.75\\
+            	0.40 & 0.60 & 0.80
+            \end{bmatrix}
+            *
+            \begin{bmatrix}
+        		0.0065\\
+        		0.0073\\
+        		0.0070
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0095\\
+        		0.0105\\
+        		0.0115\\
+        		0.0126
+        	\end{bmatrix}
+    \]
+    For step two we will again continue to derive until $net_b$
+    \[
+    	\frac{\partial E_{total}}{\partial net_b} = \frac{\partial E_{total}}{\partial out_b}\frac{\partial out_b}{\partial net_b} = \frac{\partial E_{total}}{\partial out_b} * derivative(b) =
+    	\begin{bmatrix}
+        		0.0095\\
+        		0.0105\\
+        		0.0115\\
+        		0.0126
+        	\end{bmatrix}
+        	*
+        	sig'(
+        	\begin{bmatrix}
+        		0.1\\
+        		0.3\\
+        		0.5\\
+        		0.7
+        	\end{bmatrix}
+        	)
+    \]
+    \[
+    	\begin{bmatrix}
+        		0.0095\\
+        		0.0105\\
+        		0.0115\\
+        		0.0126
+        	\end{bmatrix}
+        	*
+        	sig'(
+        	\begin{bmatrix}
+        		0.1\\
+        		0.3\\
+        		0.5\\
+        		0.7
+        	\end{bmatrix}
+        	) =
+        	\begin{bmatrix}
+        		0.0095\\
+        		0.0105\\
+        		0.0115\\
+        		0.0126
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		0.2494\\
+        		0.2445\\
+        		0.2350\\
+        		0.2217
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0024\\
+        		0.0026\\
+        		0.0027\\
+        		0.0028
+        	\end{bmatrix}
+    \]
+    Having calculated the error derived with respect to $net_b$, we have everything to calculate the gradient matrix $W_{b_g}$, so we can once again multiply the column vector with\\
+    the row vector
+    \[
+    	W_{c_g} = \frac{\partial E_{total}}{\partial net_b} * (out_a)^T = 
+    	\begin{bmatrix}
+        		0.0024\\
+        		0.0026\\
+        		0.0027\\
+        		0.0028
+        	\end{bmatrix}
+        	*
+        	\begin{bmatrix}
+        		1 & 0
+        	\end{bmatrix}
+        	=
+        	\begin{bmatrix}
+        		0.0024 & 0\\
+        		0.0026 & 0\\
+        		0.0027 & 0\\
+        		0.0028 & 0\\
+        	\end{bmatrix}
+    \]
+    And we are done. We now have all the gradients we need to make the network learn.\\
+    You might have noticed, that except for the output layer, we kept repeating the same steps. This works for any amount of layers, so when implementing this algorithm, you
+    can easily loop over the entire network to backpropagate the error.
+    
+    \newpage \noindent
+    But how do we use these gradients to make the network learn? It turns out that this part is pretty much the easiest part.\\
+    We have our gradient matrices and each of those corresponds to a weight matrix. They must be of equal size, because every field in the gradient matrix corresponds to the same field
+    in the weight matrix.\\
+    Since the gradient is simply the slope in a certain direction and the gradient matrix shows us in which directions (since the weight matrix is usually multidimensional) we must move each,
+    field, we can just subtract the gradient matrix from its corresponding weight matrix.\\
+    Usually those steps would be to big though, which is why you multiply the weight matrix (elementwise) by a learning rate first.\\
+    Let's use the learning rate l = 0.5 to show how it works for matrix $W_c$.
+    \[
+    	W_{c_{new}} = W_c - W_{c_g} * l
+    \]
+    \[
+    	W_{c_{new}} = 
+    	\begin{bmatrix}
+            	0.25 & 0.30 & 0.35 & 0.40\\
+            	0.45 & 0.50 & 0.55 & 0.60\\
+            	0.65 & 0.70 & 0.75 & 0.80
+            \end{bmatrix}
+            -
+    	\begin{bmatrix}
+        		0.0034 & 0.0037 & 0.0040 & 0.0043\\
+        		0.0038 & 0.0042 & 0.0045 & 0.0049\\
+        		0.0037 & 0.0040 & 0.0044 & 0.0047
+        	\end{bmatrix}
+        	* 0.5
+    \]
+    \[
+    	W_{c_{new}} = 
+    	\begin{bmatrix}
+            	0.25 & 0.30 & 0.35 & 0.40\\
+            	0.45 & 0.50 & 0.55 & 0.60\\
+            	0.65 & 0.70 & 0.75 & 0.80
+            \end{bmatrix}
+            -
+    	\begin{bmatrix}
+        		0.0017 & 0.0019 & 0.0020 & 0.0022\\
+        		0.0019 & 0.0021 & 0.0023 & 0.0025\\
+        		0.0019 & 0.0020 & 0.0022 & 0.0024
+        	\end{bmatrix}
+    \]
+    \[
+    	W_{c_{new}} = 
+    	\begin{bmatrix}
+            	0.2483 & 0.2981 & 0.3480 & 0.3978\\
+            	0.4481 & 0.4979 & 0.5477 & 0.5975\\
+            	0.6481 & 0.6980 & 0.7478 & 0.7976
+            \end{bmatrix}
+    \]
+    
+    \noindent \\
+    This is all you need to do to adjust your weights for layer c. The process is exactely the same for any other weight matrix and it's corresponding gradient matrix.
+    
+    \noindent \\
+    I am not going to include a code example here, if you want to see an (albeit simple) implementation of this, check out my 
+    \href{https://github.com/LinusSee/learning-ai/tree/master/first-steps/general_purpose_network}{``general purpose network''} project on github.
     
 \end{document}
