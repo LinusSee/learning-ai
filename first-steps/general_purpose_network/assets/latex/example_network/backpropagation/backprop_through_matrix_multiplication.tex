@@ -525,7 +525,7 @@
     So how can we multiply the weights times the derivative of layer d to get this first factor?\\
     The first choice might be multiplying them just like when forward propagating, which would look like this
     \[
-    	W_c * derivative(d) = 
+    	W_d * derivative(d) = 
     	\begin{bmatrix}
     		w_{d1} & w_{d2} & w_{d3}\\
             	w_{d4} & w_{d5} & w_{d6}
@@ -545,7 +545,7 @@
     is).\\
     With this we get
     \[
-    	(W_c)^T * derivative(d) = 
+    	(W_d)^T * derivative(d) = 
     	\begin{bmatrix}
     		w_{d1} & w_{d4}\\
             	w_{d2} & w_{d5}\\
@@ -698,4 +698,38 @@
     \section{Summary}
     \label{sec:summary}
     \noindent
+    Alright, when doing backpropagation earlier we started with calculating the gradient for the output layer. For that we needed a column vector of the size of the output layer and we
+    needed a row vector of the size of the preceding layer (here hidden layer 2). If we multiply the column vector times the row vector we get a matrix, that has the exact same size
+    as the weight matrix connecting both layers.\\
+    All we needed to figure out was what kind of values the vectors contained. As we wanted to multiply by the outputs of the preceding layer, the row vector contained those. The
+    column vector, in our example, contained the derivative of the error with respect to the net value of layer d.\\
+    This is all we need to calculate the output layer gradient. But there is something important to take away here, whenever we have a column vector with the derivative of the error
+    with respect to ANY layer's net value, we can calculate the gradient if we also have a row vector with the preceding layers output.\\
+    We did this in the second part, when calculating the gradient for layer c. We first found a way to calculate the gradient of the error with respect to the net value of c. Then we used
+    this as our column vector and multiplied it by the row vector of layer b's outputs and the result was the gradient for layer c.
+    
+    \noindent \\
+    So if we know that, apart from a layers output, all we need is the derivative of the error with respect to a layers net value, how did we figure that derivative out?\\
+    Well, to figure out the derivative of the error with respect to any layer n's net output ($\frac{\partial E_{total}}{\partial net_n}$), we need to know the derivative of the error with
+    respect to the previous layer's net value ($\frac{\partial E_{total}}{net_{n + 1}}$).\\
+    Then we can do a matrix multiplication of $W_n * \frac{\partial E_{total}}{net_{n + 1}}$. The result of this is a vector, which we multiply elementwise with the derivative of layer n
+    ($\frac{\partial out_n}{\partial net_n}$).\\
+    The result of this is a vector of the size of layer n's neuron count, that contains the derivative of the error with respect to layer n's net value, so all we need to do is apply the rule
+    from the first paragraph.\\
+    Multiply it by the output row vector of the preceding layer (n - 1). That's it you are done and can repeat this until you went through the entire network.\\
+    Since I usually find it hard to understand a topic if I first look at it and all I see are formular, I will now go through the entire network as an example.
+    
+    \newpage
+    \section{Example}
+    \label{sec:example}
+    I will use the same weights as in the forward propagation example and again the inputs
+    \[
+    	a_1 = 1, a_2 = 0
+    \]
+    expecting the network to switch them and therefore produce the output
+    \[
+    	d_1 = 0, d_2 = 1
+    \]
+    Note: You can try this out yourself if you want, I tested if the chosen network can fulfill this task and it worked for me.\\
+    
 \end{document}
