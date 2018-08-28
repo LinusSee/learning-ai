@@ -18,3 +18,9 @@ For this project I tried to figure out on my own how to devise a simple algorith
 While it took me a few days, I managed to figure out the algorithm and, in an attempt to provide a more clearer explanation than the ones I found, I wrote my thoughts down in this [document](https://github.com/LinusSee/learning-ai/blob/master/first-steps/general_purpose_network/assets/latex/example_network/backpropagation/backprop_through_matrix_multiplication.pdf).
 <br>
 Hopefully this document will be helpful to others who, as me, had problems finding an article that gives a good introduction for real beginners (and not add to the pile :D).
+
+# General information
+This project contains six different examples. Five examples are a neural network that learns a logic gate (and, or & xor) and one
+switches the inputs passed to it. The last one I added to test if the example I give in the document mentioned above can actually work.
+<br>
+Feel free to try out the examples, check out the code or write new examples yourself.
