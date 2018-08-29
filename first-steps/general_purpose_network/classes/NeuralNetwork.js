@@ -8,9 +8,6 @@ class NeuralNetwork {
 		for(let i = 0; i < this.weights.length; i++) {
 			this.weights[i] = new Array(neuronsPerLayer[i + 1]).fill().map(val => new Array(neuronsPerLayer[i] + 1).fill().map(val => Math.random() * 2 - 1));
 		}
-		//console.table(this.weights);
-		//console.table(this.weights[0]);
-		//console.table(this.weights[1]);
 	}
 
 	feedForward(inputVector) {
@@ -55,25 +52,17 @@ class NeuralNetwork {
 			// Backprop
 			gradients.push(math.multiply(math.transpose([derivatives[derivatives.length - 1]]), [this.biasedVector(outValues[outValues.length - 2])]));
 			for(let i = outValues.length - 1; i > 1; i--) {
-				//console.log("Weight:", this.weights[i - 1]);
 				const step1 = math.multiply(math.transpose(this.weightsWithoutBias(this.weights[i - 1])), derivatives[i - 1]);
-				//console.log("Step1:", step1);
-				//console.table(step1);
-				//console.log("Deriv2:", derivatives[i - 2]);
 				const step2  = math.dotMultiply(step1, derivatives[i - 2]);
 				derivatives[i - 2] = step2;
-				//console.log("Step2:", step2);
-				//console.log("OutVal", outValues[i - 2]);
 				const gradient = math.multiply(math.transpose([step2]), [this.biasedVector(outValues[i - 2])]);
 				gradients.push(gradient);
 			}
 		}
 		const reducedGradients = gradients.map(val => math.multiply(val, this.learningRate));
-		//console.log("Gradients:", reducedGradients);
 		for(let i = 0, j = reducedGradients.length - 1; j >= 0; i++, j--) {
 			if(i % this.weights.length == 0) {
 				i = 0;
-				//console.log("Reset");
 			}
 			this.weights[i] = math.subtract(this.weights[i], reducedGradients[j]);
 		}
@@ -100,8 +89,6 @@ class NeuralNetwork {
 	}
 
 	biasedVector(vector) {
-		//const newSize = vector._size[0] + 1;
-		//return vector.resize([newSize], 1.0);
 		const newVector = Array.from(vector);
 		newVector.push(1.0);
 		return newVector;
