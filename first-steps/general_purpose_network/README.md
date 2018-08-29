@@ -24,3 +24,5 @@ This project contains six different examples. Five examples are a neural network
 switches the inputs passed to it. The last one I added to test if the example I give in the document mentioned above can actually work.
 <br>
 Feel free to try out the examples, check out the code or write new examples yourself.
+<br>
+**Note:** Currently I commented out a few of the networks from training, because training started taking noticably long.
