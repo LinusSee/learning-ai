@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class NeuralNetwork:
 	def __init__(self, neuronsPerLayer, learningRate=0.5):
@@ -18,15 +19,18 @@ class NeuralNetwork:
 			currentOutput = self.sigmoid(temp)
 		return currentOutput
 
-	def trainBatch(self, trainingData, trainingIterations):
+	def trainBatch(self, trainingData, trainingIterations, stochasticTraining=False, batchSize=500):
+		if stochasticTraining:
+			batchSize = len(trainingData)
 		for a in range(trainingIterations):
+			random.shuffle(trainingData)
 			matrices = []
 			for weights, biases in zip(self.weights, self.biases):
 				#print(weights)
 				#print(biases)
 				matrices.append(np.append(weights.copy(), np.transpose([biases.copy()]), 1))
 
-			for input, target in trainingData:
+			for input, target in trainingData[:batchSize]:
 				netValues = []
 				outValues = [input]
 
