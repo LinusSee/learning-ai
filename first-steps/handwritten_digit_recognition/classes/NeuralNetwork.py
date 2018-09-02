@@ -5,21 +5,21 @@ class NeuralNetwork:
 	def __init__(self, neuronsPerLayer, learningRate=0.5):
 		self.neuronsPerLayer = neuronsPerLayer
 		self.weights = [np.random.randn(y, x) for x, y in zip(neuronsPerLayer[:-1], neuronsPerLayer[1:])]
-		#self.biases = [np.random.randn(y, 1) for y in neuronsPerLayer[1:]]
-		self.biases = [ np.random.randn(y) for y in neuronsPerLayer[1:] ]
+		self.biases = [np.random.randn(y, 1) for y in neuronsPerLayer[1:]]
+		#self.biases = [ np.random.randn(y) for y in neuronsPerLayer[1:] ]
 		self.learningRate = learningRate
-		print("Weights", self.weights)
-		print("Biases", self.biases)
+		print("WeightsConstr", self.weights)
+		print("BiasesConstr", self.biases)
 
 	def feedforward(self, input):
-		currentOutput = np.array(input)
+		currentOutput = input
 		for weightMatrix, biases in zip(self.weights, self.biases):
 			temp = np.dot(weightMatrix, currentOutput) + biases
-			#print("Temp", temp)
 			currentOutput = self.sigmoid(temp)
 		return currentOutput
 
 	def trainBatch(self, trainingData, trainingIterations, stochasticTraining=False, batchSize=500):
+		trainingData = list(trainingData)
 		if stochasticTraining:
 			batchSize = len(trainingData)
 		for a in range(trainingIterations):
@@ -28,7 +28,7 @@ class NeuralNetwork:
 			for weights, biases in zip(self.weights, self.biases):
 				#print(weights)
 				#print(biases)
-				matrices.append(np.append(weights.copy(), np.transpose([biases.copy()]), 1))
+				matrices.append(np.append(weights.copy(), biases.copy(), 1))
 
 			for input, target in trainingData[:batchSize]:
 				netValues = []
@@ -38,21 +38,35 @@ class NeuralNetwork:
 					temp = np.dot(weightMatrix, outValues[-1]) + biases
 					netValues.append(temp)
 					outValues.append(self.sigmoid(netValues[-1]))
-
-				error = self.error_prime(outValues[-1], np.array(target))
+#				print("OutVal", outValues[-1])
+#				print("Target", target)
+				error = self.error_prime(outValues[-1], target)
+#				print("Error", error)
 				currentDerivative = self.sigmoid_prime(outValues[-1], useSigmoid=False) * error
-				gradients = [ np.dot(np.transpose([currentDerivative]), [np.append(outValues[-2], 1)]) ]
+#				print("CurrentDeriv", currentDerivative)
+				gradients = [ np.dot(currentDerivative, np.transpose(np.append(outValues[-2], [[1]], 0))) ]
+#				print("Gradients", gradients)
 
 				for x in reversed(range(1, len(self.weights))):
 					temp = np.dot(np.transpose(self.weights[x]), currentDerivative)
-					currentDerivative = np.multiply(currentDerivative, self.sigmoid_prime(outValues[x], useSigmoid=False))
-					gradients.append(np.dot(np.transpose([currentDerivative]), [np.append(outValues[x - 1], 1)]))
+#					print("Temp", temp)
+					currentLayerDerivative = self.sigmoid_prime(outValues[x], useSigmoid=False)
+#					print("CurrentLayerDerivative", currentLayerDerivative)
+					currentDerivative = np.multiply(temp, currentLayerDerivative)
+#					print("CurrentDerivLoop", currentDerivative)
+#					print("Before", np.transpose(np.append(outValues[x - 1], [[1]], 0)))
+					gradients.append(np.dot(currentDerivative, np.transpose(np.append(outValues[x - 1], [[1]], 0))))
+#					print("Gradient2", gradients[1])
 
 				for index, gradient in enumerate(reversed(gradients)):
 					matrices[index] -= gradient * self.learningRate
-
+#			print("Gradients", gradients)
+#			print("Matrices", matrices)
+			# Can be done easier, no delete necessary
 			weights = [ np.delete(matrix, -1, 1) for matrix in matrices ]
-			biases = [ matrix[:,-1] for matrix in matrices ]
+			biases = [ matrix[:,[-1]] for matrix in matrices ]
+#			print("Weights", weights)
+#			print("Biases", biases)
 			self.weights = weights
 			self.biases = biases
 
