@@ -18,15 +18,15 @@ class NeuralNetwork:
 			currentOutput = self.sigmoid(temp)
 		return currentOutput
 
-	def trainBatch(self, inputs, expectedOutputs, trainingIterations):
-		for x in range(trainingIterations):
+	def trainBatch(self, trainingData, trainingIterations):
+		for a in range(trainingIterations):
 			matrices = []
 			for weights, biases in zip(self.weights, self.biases):
 				#print(weights)
 				#print(biases)
 				matrices.append(np.append(weights.copy(), np.transpose([biases.copy()]), 1))
 
-			for input, target in zip(inputs, expectedOutputs):
+			for input, target in trainingData:
 				netValues = []
 				outValues = [input]
 

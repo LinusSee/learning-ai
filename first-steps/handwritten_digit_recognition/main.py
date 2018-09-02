@@ -2,6 +2,13 @@ import classes.NeuralNetwork as NeuralNetwork
 
 nn = NeuralNetwork.NeuralNetwork([2, 2, 1])
 
+trainingDataXor = [
+	([1, 1], [0]),
+	([1, 0], [1]),
+	([0, 1], [1]),
+	([0, 0], [0])
+]
+
 inputs = [
 	[1, 1],
 	[1, 0],
@@ -13,8 +20,7 @@ xorOutputs = [ [0], [1], [1], [0] ]
 
 print("Output", nn.feedforward(inputs[0]))
 
-for x in range(10000):
-	nn.trainBatch(inputs, xorOutputs)
+nn.trainBatch(trainingDataXor, 15000)
 
 print(nn.feedforward(inputs[0]))
 print(nn.feedforward(inputs[1]))
