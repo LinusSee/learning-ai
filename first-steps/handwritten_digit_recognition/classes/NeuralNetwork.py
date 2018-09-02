@@ -8,8 +8,8 @@ class NeuralNetwork:
 		self.biases = [np.random.randn(y, 1) for y in neuronsPerLayer[1:]]
 		#self.biases = [ np.random.randn(y) for y in neuronsPerLayer[1:] ]
 		self.learningRate = learningRate
-		print("WeightsConstr", self.weights)
-		print("BiasesConstr", self.biases)
+		#print("WeightsConstr", self.weights)
+		#print("BiasesConstr", self.biases)
 
 	def feedforward(self, input):
 		currentOutput = input
