@@ -7,19 +7,34 @@ import numpy as np
 loader = MnistLoader.MnistLoader()
 training_data, validation_data, test_data = loader.load_data_wrapper()
 
-nn = NeuralNetwork.NeuralNetwork([784, 30, 10], 3.0)
-nn.trainBatch(training_data, 10000, batchSize=100)
+nn = NeuralNetwork.NeuralNetwork([784, 30, 10], 1.0)
 
+a = list(training_data)
+b = list(test_data)
 
-#nn = NeuralNetwork.NeuralNetwork([2, 2, 1])
 countRight = 0
-for input, target in test_data:
+for input, target in b:
 	#print("Guess", nn.feedforward(input))
 	#print("MaxStuff", np.argmax(nn.feedforward(input)))
 	#print("Actual", target)
 	if np.argmax(nn.feedforward(input)) == target:
 		countRight += 1
-print("Correct: ", countRight, "/", 10000)
+print("Correct: ", countRight, "/", len(b))
+
+nn.trainBatch(a, 30, batchSize=10)
+#for input, target in a:
+#	nn.feedforward(input)
+
+
+#nn = NeuralNetwork.NeuralNetwork([2, 2, 1])
+countRight = 0
+for input, target in b:
+	#print("Guess", nn.feedforward(input))
+	#print("MaxStuff", np.argmax(nn.feedforward(input)))
+	#print("Actual", target)
+	if np.argmax(nn.feedforward(input)) == target:
+		countRight += 1
+print("Correct: ", countRight, "/", len(b))
 
 trainingDataXor = [
 	(np.array([[1], [1]]), np.array([[0]])),
