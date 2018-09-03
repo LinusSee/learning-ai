@@ -5,3 +5,4 @@ Since earlier projects are easier to understand than the more advanced later pro
 1. Simple perceptron
 2. Xor-Gate
 3. General purpose neural network
+4. Handwritten digit recognition
