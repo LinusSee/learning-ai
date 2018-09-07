@@ -21,18 +21,26 @@ def processData(data):
 	return list(zip(keys, entries))
 
 trainingSet = processData(data.iloc[:105])
-#validationSet = processData(data.iloc[105:135])
-#testSet = processData(data.iloc[135:])
+validationSet = processData(data.iloc[105:135])
+testSet = processData(data.iloc[135:])
 
 kn.train(trainingSet)
 
-print(trainingSet[0])
-correct = 0
-for key, values in trainingSet:
-	#print("Guess", kn.guess(values, 1))
-	#print("Actual", key)
-	#break
-	if kn.guess(values, 1) == key:
-		correct += 1
+correctTraining = 0
+def run(data, k, printLabel):
+	correct = 0
+	for key, values in data:
+		if kn.guess(values, k) == key:
+			correct += 1
 
-print(correct, "/", len(trainingSet))
+	print(printLabel, correct, "/", len(data))
+
+
+run(trainingSet, 1, "Train1")
+run(validationSet, 1, "Validate1")
+run(trainingSet, 3, "Train3")
+run(validationSet, 3, "Validate3")
+run(trainingSet, 5, "Train5")
+run(validationSet, 5, "Validate5")
+run(trainingSet, 7, "Train7")
+run(validationSet, 7, "Validate7")
