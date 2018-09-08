@@ -28,46 +28,35 @@ testSet = processData(data.iloc[135:])
 kn.train(trainingSet)
 
 correctTraining = 0
-def run(data, k, printLabel):
+def runOwn(data, k, printLabel):
 	correct = 0
 	for key, values in data:
-		if kn.guess(values, k) == key:
+		if kn.guess(values, k)[0] == key:
 			correct += 1
 
 	print(printLabel, correct, "/", len(data))
 
+def runSciKit(valData, k, printLabel):
+	correct = 0
+	clazz = KNeighborsClassifier(n_neighbors=k)
+	clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+	for key, values in valData:
+		if clazz.predict([values])[0] == key:
+			correct += 1
 
-run(trainingSet, 1, "Train1")
-run(validationSet, 1, "Validate1")
-run(trainingSet, 3, "Train3")
-run(validationSet, 3, "Validate3")
-run(trainingSet, 5, "Train5")
-run(validationSet, 5, "Validate5")
-run(trainingSet, 7, "Train7")
-run(validationSet, 7, "Validate7")
+	print(printLabel, correct, "/", len(valData))
 
-#print(kn.guess(validationSet[0][1], 1))
-#print(kn.guess(validationSet[0][1], 3))
-#print(kn.guess(validationSet[0][1], 5))
-#print(kn.guess(validationSet[0][1], 7))
+
 test = [7.2, 3.6, 5.1, 2.5]
-print(kn.guess(test, 1))
-print(kn.guess(test, 3))
-print(kn.guess(test, 5))
-print(kn.guess(test, 7))
 
-clazz = KNeighborsClassifier(n_neighbors=1)
-clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
-print("SciKit", clazz.predict([test]))
+#clazz = KNeighborsClassifier(n_neighbors=5)
+#clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+#for key, values in validationSet:
+#	print("Own", kn.guess(values, 5), " with actual ", key)
+#	print("SciKit", clazz.predict([values]), clazz.kneighbors([values])[1], " with actual", key)
+for x in range(1, 8, 2):
+	runOwn(validationSet, x, "Own" + str(x))
+	runSciKit(validationSet, x, "SciKit" + str(x))
 
-clazz = KNeighborsClassifier(n_neighbors=3)
-clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
-print("SciKit", clazz.predict([test]))
+#print(kn.guess(validationSet[0][1], 3))
 
-clazz = KNeighborsClassifier(n_neighbors=5)
-clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
-print("SciKit", clazz.predict([test]))
-
-clazz = KNeighborsClassifier(n_neighbors=7)
-clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
-print("SciKit", clazz.predict([test]))

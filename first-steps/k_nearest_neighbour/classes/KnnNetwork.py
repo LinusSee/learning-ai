@@ -8,9 +8,10 @@ class KnnNetwork:
 	# caseToPredict = numpy array of position arguments
 	# k = count of nearest neighbours
 	def guess(self, caseToPredict, k):
-		distances = [ (el[0], self.euclidianDistance(el[1], caseToPredict)) for el in self.trainingData ]
+		distances = [ (el[0], self.euclidianDistance(el[1], caseToPredict), x) for x, el in zip(range(len(self.trainingData)), self.trainingData) ]
 		distances.sort(key=lambda x: x[1])
 		neighbours = distances[:k]
+		returnNeighbours = [ x[2] for x in neighbours ]
 
 		classCount = self.classCount(neighbours)
 
@@ -21,7 +22,7 @@ class KnnNetwork:
 				maxVal = value
 				currentGuess = key
 
-		return key
+		return (key, returnNeighbours)
 
 	# Expects a list of tuples. The first tuple element should contain the correct
 	# classification and the other the positional arguments
@@ -39,7 +40,7 @@ class KnnNetwork:
 
 	def classCount(self, tuples):
 		result = {}
-		for key, value in tuples:
+		for key, value, index in tuples:
 			result.setdefault(key, 0)
 			result[key] = result[key] + 1
 		return result
