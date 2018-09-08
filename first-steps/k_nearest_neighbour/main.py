@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
 
 import classes.KnnNetwork as KnnNetwork
 
@@ -44,3 +45,29 @@ run(trainingSet, 5, "Train5")
 run(validationSet, 5, "Validate5")
 run(trainingSet, 7, "Train7")
 run(validationSet, 7, "Validate7")
+
+#print(kn.guess(validationSet[0][1], 1))
+#print(kn.guess(validationSet[0][1], 3))
+#print(kn.guess(validationSet[0][1], 5))
+#print(kn.guess(validationSet[0][1], 7))
+test = [7.2, 3.6, 5.1, 2.5]
+print(kn.guess(test, 1))
+print(kn.guess(test, 3))
+print(kn.guess(test, 5))
+print(kn.guess(test, 7))
+
+clazz = KNeighborsClassifier(n_neighbors=1)
+clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+print("SciKit", clazz.predict([test]))
+
+clazz = KNeighborsClassifier(n_neighbors=3)
+clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+print("SciKit", clazz.predict([test]))
+
+clazz = KNeighborsClassifier(n_neighbors=5)
+clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+print("SciKit", clazz.predict([test]))
+
+clazz = KNeighborsClassifier(n_neighbors=7)
+clazz.fit(data.iloc[:105, 0:4], data.iloc[:105, -1])
+print("SciKit", clazz.predict([test]))
