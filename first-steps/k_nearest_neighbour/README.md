@@ -13,3 +13,7 @@ I used the iris dataset with a ratio of 70/20/10 for training, validation and te
 Since the neighbours were the same, I suspect that there are problems with edge cases, e.g. there is a tie between two classes, where you could compare the total distances to resolve the tie.
 <br>
 As this isn't that complicated but tedious to resolve, I decided against it for now, in case I stumble upon this problem in the future again I might resolve it then.
+<br>
+This is a helpful [article](https://medium.com/@adi.bronshtein/a-quick-introduction-to-k-nearest-neighbors-algorithm-62214cea29c7) that gives a brief overview over what KNN is and what it does.
+<br>
+For an example of how to implement it, you can look at this [article](https://www.analyticsvidhya.com/blog/2018/03/introduction-k-neighbours-algorithm-clustering/), based on which I implemented the example in this repo.
