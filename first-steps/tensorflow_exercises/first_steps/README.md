@@ -1,0 +1,3 @@
+# First steps with TensorFlow
+This is pretty much the tutorial you can find [here](https://colab.research.google.com/notebooks/mlcc/first_steps_with_tensor_flow.ipynb?utm_source=mlcc&utm_campaign=colab-external&utm_medium=referral&utm_content=firststeps-colab&hl=de#scrollTo=6TjLjL9IU80G),
+but as I didn't want to log in to try out the examples (and maybe experiment a little), I decided follow the example in this github repo.
