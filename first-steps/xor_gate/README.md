@@ -28,7 +28,7 @@ The network is made for having two input neurons, two hidden neurons and a singl
 
 <br>
 <br>
-The choice of two input neurons i1 and i2 is rather obvious, since basic logic gates usually have two input signals (expect of course negation).
+The choice of two input neurons i1 and i2 is rather obvious, since basic logic gates usually have two input signals (except of course negation).
 <br>
 As mentioned earlier, a single neuron can only solve linear problems. Since a xor-gate is nonlinear using only a single neuron to process the two inputs was not an option. Because a xor-gate can also be implemented by (OR)AND(NAND) and all three of those gates (OR, AND + NAND) are linear problems, I decided to use two hidden layer neurons h1 and h2 an a single output neuron o2 to model this relationship.
 <br>
